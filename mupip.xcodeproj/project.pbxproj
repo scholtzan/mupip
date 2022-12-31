@@ -1,0 +1,573 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		95541E5B295FB36C00ECEC72 /* mupipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E5A295FB36C00ECEC72 /* mupipApp.swift */; };
+		95541E5D295FB36C00ECEC72 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E5C295FB36C00ECEC72 /* ContentView.swift */; };
+		95541E5F295FB37000ECEC72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95541E5E295FB37000ECEC72 /* Assets.xcassets */; };
+		95541E62295FB37000ECEC72 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95541E61295FB37000ECEC72 /* Preview Assets.xcassets */; };
+		95541E6D295FB37000ECEC72 /* mupipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E6C295FB37000ECEC72 /* mupipTests.swift */; };
+		95541E77295FB37000ECEC72 /* mupipUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E76295FB37000ECEC72 /* mupipUITests.swift */; };
+		95541E79295FB37000ECEC72 /* mupipUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E78295FB37000ECEC72 /* mupipUITestsLaunchTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		95541E69295FB37000ECEC72 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 95541E4F295FB36C00ECEC72 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 95541E56295FB36C00ECEC72;
+			remoteInfo = mupip;
+		};
+		95541E73295FB37000ECEC72 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 95541E4F295FB36C00ECEC72 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 95541E56295FB36C00ECEC72;
+			remoteInfo = mupip;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		95541E57295FB36C00ECEC72 /* mupip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mupip.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		95541E5A295FB36C00ECEC72 /* mupipApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mupipApp.swift; sourceTree = "<group>"; };
+		95541E5C295FB36C00ECEC72 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		95541E5E295FB37000ECEC72 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		95541E61295FB37000ECEC72 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		95541E63295FB37000ECEC72 /* mupip.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = mupip.entitlements; sourceTree = "<group>"; };
+		95541E68295FB37000ECEC72 /* mupipTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mupipTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		95541E6C295FB37000ECEC72 /* mupipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mupipTests.swift; sourceTree = "<group>"; };
+		95541E72295FB37000ECEC72 /* mupipUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mupipUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		95541E76295FB37000ECEC72 /* mupipUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mupipUITests.swift; sourceTree = "<group>"; };
+		95541E78295FB37000ECEC72 /* mupipUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mupipUITestsLaunchTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		95541E54295FB36C00ECEC72 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95541E65295FB37000ECEC72 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95541E6F295FB37000ECEC72 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		95541E4E295FB36C00ECEC72 = {
+			isa = PBXGroup;
+			children = (
+				95541E59295FB36C00ECEC72 /* mupip */,
+				95541E6B295FB37000ECEC72 /* mupipTests */,
+				95541E75295FB37000ECEC72 /* mupipUITests */,
+				95541E58295FB36C00ECEC72 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		95541E58295FB36C00ECEC72 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				95541E57295FB36C00ECEC72 /* mupip.app */,
+				95541E68295FB37000ECEC72 /* mupipTests.xctest */,
+				95541E72295FB37000ECEC72 /* mupipUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		95541E59295FB36C00ECEC72 /* mupip */ = {
+			isa = PBXGroup;
+			children = (
+				95541E5A295FB36C00ECEC72 /* mupipApp.swift */,
+				95541E5C295FB36C00ECEC72 /* ContentView.swift */,
+				95541E5E295FB37000ECEC72 /* Assets.xcassets */,
+				95541E63295FB37000ECEC72 /* mupip.entitlements */,
+				95541E60295FB37000ECEC72 /* Preview Content */,
+			);
+			path = mupip;
+			sourceTree = "<group>";
+		};
+		95541E60295FB37000ECEC72 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				95541E61295FB37000ECEC72 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		95541E6B295FB37000ECEC72 /* mupipTests */ = {
+			isa = PBXGroup;
+			children = (
+				95541E6C295FB37000ECEC72 /* mupipTests.swift */,
+			);
+			path = mupipTests;
+			sourceTree = "<group>";
+		};
+		95541E75295FB37000ECEC72 /* mupipUITests */ = {
+			isa = PBXGroup;
+			children = (
+				95541E76295FB37000ECEC72 /* mupipUITests.swift */,
+				95541E78295FB37000ECEC72 /* mupipUITestsLaunchTests.swift */,
+			);
+			path = mupipUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		95541E56295FB36C00ECEC72 /* mupip */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95541E7C295FB37000ECEC72 /* Build configuration list for PBXNativeTarget "mupip" */;
+			buildPhases = (
+				95541E53295FB36C00ECEC72 /* Sources */,
+				95541E54295FB36C00ECEC72 /* Frameworks */,
+				95541E55295FB36C00ECEC72 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = mupip;
+			productName = mupip;
+			productReference = 95541E57295FB36C00ECEC72 /* mupip.app */;
+			productType = "com.apple.product-type.application";
+		};
+		95541E67295FB37000ECEC72 /* mupipTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95541E7F295FB37000ECEC72 /* Build configuration list for PBXNativeTarget "mupipTests" */;
+			buildPhases = (
+				95541E64295FB37000ECEC72 /* Sources */,
+				95541E65295FB37000ECEC72 /* Frameworks */,
+				95541E66295FB37000ECEC72 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				95541E6A295FB37000ECEC72 /* PBXTargetDependency */,
+			);
+			name = mupipTests;
+			productName = mupipTests;
+			productReference = 95541E68295FB37000ECEC72 /* mupipTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		95541E71295FB37000ECEC72 /* mupipUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 95541E82295FB37000ECEC72 /* Build configuration list for PBXNativeTarget "mupipUITests" */;
+			buildPhases = (
+				95541E6E295FB37000ECEC72 /* Sources */,
+				95541E6F295FB37000ECEC72 /* Frameworks */,
+				95541E70295FB37000ECEC72 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				95541E74295FB37000ECEC72 /* PBXTargetDependency */,
+			);
+			name = mupipUITests;
+			productName = mupipUITests;
+			productReference = 95541E72295FB37000ECEC72 /* mupipUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		95541E4F295FB36C00ECEC72 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1420;
+				LastUpgradeCheck = 1420;
+				TargetAttributes = {
+					95541E56295FB36C00ECEC72 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					95541E67295FB37000ECEC72 = {
+						CreatedOnToolsVersion = 14.2;
+						TestTargetID = 95541E56295FB36C00ECEC72;
+					};
+					95541E71295FB37000ECEC72 = {
+						CreatedOnToolsVersion = 14.2;
+						TestTargetID = 95541E56295FB36C00ECEC72;
+					};
+				};
+			};
+			buildConfigurationList = 95541E52295FB36C00ECEC72 /* Build configuration list for PBXProject "mupip" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 95541E4E295FB36C00ECEC72;
+			productRefGroup = 95541E58295FB36C00ECEC72 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				95541E56295FB36C00ECEC72 /* mupip */,
+				95541E67295FB37000ECEC72 /* mupipTests */,
+				95541E71295FB37000ECEC72 /* mupipUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		95541E55295FB36C00ECEC72 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95541E62295FB37000ECEC72 /* Preview Assets.xcassets in Resources */,
+				95541E5F295FB37000ECEC72 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95541E66295FB37000ECEC72 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95541E70295FB37000ECEC72 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		95541E53295FB36C00ECEC72 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95541E5D295FB36C00ECEC72 /* ContentView.swift in Sources */,
+				95541E5B295FB36C00ECEC72 /* mupipApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95541E64295FB37000ECEC72 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95541E6D295FB37000ECEC72 /* mupipTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		95541E6E295FB37000ECEC72 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95541E79295FB37000ECEC72 /* mupipUITestsLaunchTests.swift in Sources */,
+				95541E77295FB37000ECEC72 /* mupipUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		95541E6A295FB37000ECEC72 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 95541E56295FB36C00ECEC72 /* mupip */;
+			targetProxy = 95541E69295FB37000ECEC72 /* PBXContainerItemProxy */;
+		};
+		95541E74295FB37000ECEC72 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 95541E56295FB36C00ECEC72 /* mupip */;
+			targetProxy = 95541E73295FB37000ECEC72 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		95541E7A295FB37000ECEC72 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		95541E7B295FB37000ECEC72 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		95541E7D295FB37000ECEC72 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = mupip/mupip.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"mupip/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.scholtzan.mupip;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		95541E7E295FB37000ECEC72 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = mupip/mupip.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"mupip/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.scholtzan.mupip;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		95541E80295FB37000ECEC72 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.scholtzan.mupipTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mupip.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/mupip";
+			};
+			name = Debug;
+		};
+		95541E81295FB37000ECEC72 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.scholtzan.mupipTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mupip.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/mupip";
+			};
+			name = Release;
+		};
+		95541E83295FB37000ECEC72 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.scholtzan.mupipUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = mupip;
+			};
+			name = Debug;
+		};
+		95541E84295FB37000ECEC72 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = net.scholtzan.mupipUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = mupip;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		95541E52295FB36C00ECEC72 /* Build configuration list for PBXProject "mupip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95541E7A295FB37000ECEC72 /* Debug */,
+				95541E7B295FB37000ECEC72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		95541E7C295FB37000ECEC72 /* Build configuration list for PBXNativeTarget "mupip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95541E7D295FB37000ECEC72 /* Debug */,
+				95541E7E295FB37000ECEC72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		95541E7F295FB37000ECEC72 /* Build configuration list for PBXNativeTarget "mupipTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95541E80295FB37000ECEC72 /* Debug */,
+				95541E81295FB37000ECEC72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		95541E82295FB37000ECEC72 /* Build configuration list for PBXNativeTarget "mupipUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95541E83295FB37000ECEC72 /* Debug */,
+				95541E84295FB37000ECEC72 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 95541E4F295FB36C00ECEC72 /* Project object */;
+}
