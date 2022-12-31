@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  mupip
-//
-//  Created by Anna Scholtz on 2022-12-30.
-//
-
 import SwiftUI
 
 struct ContentView: View {
