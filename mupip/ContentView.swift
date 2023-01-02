@@ -4,20 +4,22 @@ import OSLog
 struct ContentView: View {
     private let logger = Logger()
     
-    @StateObject var screenRecorder = ScreenRecorder()
+    @StateObject var multiScreenRecorder = MultiScreenRecorder()
     
     var body: some View {
-        VStack {
-            screenRecorder.captureView
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .aspectRatio(screenRecorder.contentSize, contentMode: .fit)
+        HStack {
+            ForEach(0..<multiScreenRecorder.screenRecorders.count, id: \.self) { i in
+                multiScreenRecorder.screenRecorders[i].captureView
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .aspectRatio(multiScreenRecorder.screenRecorders[i].contentSize, contentMode: .fit)
+            }
         }
         .padding()
         .navigationTitle("mupip")
         .onAppear {
             Task {
-                if await screenRecorder.hasRecordingPermissions {
-                    await screenRecorder.start()
+                if await multiScreenRecorder.hasRecordingPermissions {
+                    await multiScreenRecorder.start()
                 } else {
                     logger.error("No permissions to capture screen")
                 }

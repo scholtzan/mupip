@@ -46,18 +46,6 @@ class ScreenRecorder: ObservableObject {
         CaptureView()
     }()
     
-    var hasRecordingPermissions: Bool {
-        get async {
-            do {
-                try await
-                    SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
-                return true
-            } catch {
-                return false
-            }
-        }
-    }
-    
     private var streamConfiguration: SCStreamConfiguration {
         let streamConfig = SCStreamConfiguration()
         streamConfig.capturesAudio = false // todo: allow audio capturing
