@@ -4,7 +4,7 @@ import OSLog
 struct ContentView: View {
     private let logger = Logger()
     
-    @StateObject var multiScreenRecorder = MultiScreenRecorder()
+    @StateObject var multiScreenRecorder: MultiScreenRecorder
     
     var body: some View {
         HStack {

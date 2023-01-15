@@ -6,12 +6,11 @@
 //
 
 import Foundation
-import OSLog
 import ScreenCaptureKit
 
 @MainActor
 class MultiScreenRecorder: ObservableObject {
-    @Published var screenRecorders: [ScreenRecorder] = [ScreenRecorder(), ScreenRecorder()]
+    @Published var screenRecorders: [ScreenRecorder] = [ScreenRecorder()]
     
     var hasRecordingPermissions: Bool {
         get async {
@@ -31,5 +30,10 @@ class MultiScreenRecorder: ObservableObject {
                 await recorder.start()
             }
         }
+    }
+    
+    func add(screenRecorder: ScreenRecorder) async {
+        self.screenRecorders.append(screenRecorder)
+        await screenRecorder.start()
     }
 }

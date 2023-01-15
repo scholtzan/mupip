@@ -6,6 +6,9 @@
 //
 
 import SwiftUI
+import OSLog
+import ScreenCaptureKit
+import Carbon.HIToolbox
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -21,15 +24,41 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 struct mupipApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
+    @StateObject var multiScreenRecorder = MultiScreenRecorder()
+    private var selectionHandler = SelectionHandler()
+    
+    private let logger = Logger()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(multiScreenRecorder: multiScreenRecorder)
         }.windowStyle(HiddenTitleBarWindowStyle())
+
         
         MenuBarExtra("mupip") {
+            Menu("Capture") {
+                Button("Display") {
+                    selectionHandler.select(capture: .display(nil), onSelect: { [self] (screenRecorder: ScreenRecorder) in
+                        Task {
+                            await self.multiScreenRecorder.add(screenRecorder: screenRecorder)
+                        }
+                    })
+                }
+                Button("Window") {
+//                    Task {
+//                        await multiScreenRecorder.add(capture: .window(nil))
+//                    }
+                }
+                Button("Selection") {
+                    // todo
+                }
+            }
+            Divider()
+            
             Button("Close") {
                 NSApplication.shared.terminate(nil)
-            }
+            }.keyboardShortcut("q")
         }
     }
+
 }

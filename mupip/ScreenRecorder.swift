@@ -18,15 +18,15 @@ struct CapturedFrame {
     var size: CGSize { contentRect.size }
 }
 
+enum Capture {
+    case display(SCDisplay?)
+    case window(SCWindow?)
+    // case portion
+}
+
 @MainActor
 class ScreenRecorder: ObservableObject {
     private let logger = Logger()
-    
-    enum Capture {
-        case display(SCDisplay?)
-        case window(SCWindow?)
-        // case portion
-    }
     
     @Published var isRunning = false
     
