@@ -45,9 +45,11 @@ struct mupipApp: App {
                     })
                 }
                 Button("Window") {
-//                    Task {
-//                        await multiScreenRecorder.add(capture: .window(nil))
-//                    }
+                    selectionHandler.select(capture: .window(nil), onSelect: { [self] (screenRecorder: ScreenRecorder) in
+                        Task {
+                            await self.multiScreenRecorder.add(screenRecorder: screenRecorder)
+                        }
+                    })
                 }
                 Button("Selection") {
                     // todo
