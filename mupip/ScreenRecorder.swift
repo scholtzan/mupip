@@ -25,7 +25,15 @@ enum Capture {
 }
 
 @MainActor
-class ScreenRecorder: ObservableObject {
+class ScreenRecorder: ObservableObject, Hashable {
+    nonisolated static func == (lhs: ScreenRecorder, rhs: ScreenRecorder) -> Bool {
+        return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+    }
+    
+    nonisolated func hash(into hasher: inout Hasher) {
+        return hasher.combine(ObjectIdentifier(self))
+    }
+    
     private let logger = Logger()
     
     @Published var isRunning = false

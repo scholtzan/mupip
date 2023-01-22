@@ -36,4 +36,10 @@ class MultiScreenRecorder: ObservableObject {
         self.screenRecorders.append(screenRecorder)
         await screenRecorder.start()
     }
+    
+    func remove(at: Int) async {
+        await self.screenRecorders[at].stop()
+        self.screenRecorders.remove(at: at)
+
+    }
 }

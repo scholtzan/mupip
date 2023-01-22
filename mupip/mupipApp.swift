@@ -16,6 +16,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             window.titleVisibility = .hidden
             window.titlebarAppearsTransparent = true
             window.level = .floating
+            window.standardWindowButton(.closeButton)?.isHidden = true
+            window.standardWindowButton(.miniaturizeButton)?.isHidden = true
+            window.standardWindowButton(.zoomButton)?.isHidden = true
+            window.isOpaque = false
+            window.backgroundColor = NSColor(red: 50, green: 50, blue: 50, alpha: 0.5)
         }
     }
 }
