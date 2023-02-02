@@ -53,6 +53,7 @@
 		95541E8829634ADC00ECEC72 /* ScreenRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRecorder.swift; sourceTree = "<group>"; };
 		95541E8A2963892E00ECEC72 /* MultiScreenRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiScreenRecorder.swift; sourceTree = "<group>"; };
 		95541E8C2974779E00ECEC72 /* SelectionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionHandler.swift; sourceTree = "<group>"; };
+		95C113C9298214FB0036F750 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,12 +104,12 @@
 		95541E59295FB36C00ECEC72 /* mupip */ = {
 			isa = PBXGroup;
 			children = (
+				95C113C9298214FB0036F750 /* Info.plist */,
 				95541E5A295FB36C00ECEC72 /* mupipApp.swift */,
 				95541E8829634ADC00ECEC72 /* ScreenRecorder.swift */,
 				95541E8A2963892E00ECEC72 /* MultiScreenRecorder.swift */,
 				95541E8C2974779E00ECEC72 /* SelectionHandler.swift */,
 				95541E85295FBE3400ECEC72 /* Views */,
-				95541E5C295FB36C00ECEC72 /* ContentView.swift */,
 				95541E5E295FB37000ECEC72 /* Assets.xcassets */,
 				95541E63295FB37000ECEC72 /* mupip.entitlements */,
 				95541E60295FB37000ECEC72 /* Preview Content */,
@@ -144,6 +145,7 @@
 		95541E85295FBE3400ECEC72 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				95541E5C295FB36C00ECEC72 /* ContentView.swift */,
 				95541E86295FBE6500ECEC72 /* CaptureView.swift */,
 			);
 			path = Views;
@@ -446,6 +448,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"mupip/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = mupip/Info.plist;
+				INFOPLIST_KEY_LSUIElement = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -471,6 +475,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"mupip/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = mupip/Info.plist;
+				INFOPLIST_KEY_LSUIElement = NO;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

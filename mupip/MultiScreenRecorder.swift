@@ -40,6 +40,11 @@ class MultiScreenRecorder: ObservableObject {
     func remove(at: Int) async {
         await self.screenRecorders[at].stop()
         self.screenRecorders.remove(at: at)
-
+    }
+    
+    func remove(screenRecorder: ScreenRecorder) async {
+        if let i = screenRecorders.firstIndex(of: screenRecorder) {
+            await self.remove(at: i)
+        }
     }
 }

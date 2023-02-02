@@ -25,7 +25,9 @@ enum Capture {
 }
 
 @MainActor
-class ScreenRecorder: ObservableObject, Hashable {
+class ScreenRecorder: ObservableObject, Hashable, Identifiable {
+    let id = UUID()
+    
     nonisolated static func == (lhs: ScreenRecorder, rhs: ScreenRecorder) -> Bool {
         return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
     }
