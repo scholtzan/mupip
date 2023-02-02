@@ -80,11 +80,8 @@ struct mupipApp: App {
         newWindow!.standardWindowButton(.zoomButton)!.isHidden = true
         newWindow!.standardWindowButton(.closeButton)!.isHidden = true
         newWindow!.styleMask = .borderless
-        
-
-        // todo: drag drop window
-        // onDrag method passed into view or notice drag and drop on contentview
-        //newWindow!.performDrag()
+        newWindow!.isMovableByWindowBackground = true
+        newWindow!.styleMask = .resizable
              
         windows.append(newWindow!)
     }

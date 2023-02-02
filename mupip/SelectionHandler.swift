@@ -136,7 +136,7 @@ class SelectionHandler {
                     var displayCount: UInt32 = 0
                     CGGetActiveDisplayList(0, nil, &displayCount)
                     let allocatedDisplays = Int(displayCount)
-                    var activeDisplays = UnsafeMutablePointer<CGDirectDisplayID>.allocate(capacity: allocatedDisplays)
+                    let activeDisplays = UnsafeMutablePointer<CGDirectDisplayID>.allocate(capacity: allocatedDisplays)
                     
                     if allocatedDisplays <= 0 {
                         return nil
