@@ -17,7 +17,7 @@ class SelectionHandler {
     
     private var eventMonitor: Any?
     private var selection: NSWindow? = nil
-    private var onSelect: ((ScreenRecorder) -> Void)? = nil
+    private var onSelect: ((ScreenRecorder, CGSize) -> Void)? = nil
     
     private var availableShareableContent: SCShareableContent? = nil
     
@@ -75,7 +75,7 @@ class SelectionHandler {
                                 if let selectedWindow = self.windowWithMouse(mouseLocation: mouseLocation, currentScreen: currentScreen!)?.window {
                                     let newScreenRecorder = ScreenRecorder()
                                     newScreenRecorder.capture = .window(selectedWindow)
-                                    self.onSelect!(newScreenRecorder)
+                                    self.onSelect!(newScreenRecorder, selectedWindow.frame.size)
                                 }
                             }
                             
@@ -84,7 +84,7 @@ class SelectionHandler {
                         case .display(_):
                             let newScreenRecorder = ScreenRecorder()
                             newScreenRecorder.capture = .display(displayWithMouse)
-                            self.onSelect!(newScreenRecorder)
+                            self.onSelect!(newScreenRecorder, currentScreen!.frame.size)
 
                             self.selection?.close()
                             self.selecting = false
@@ -99,7 +99,7 @@ class SelectionHandler {
         }
     }
     
-    func select(capture: Capture, onSelect: @escaping ((ScreenRecorder) -> Void)) {
+    func select(capture: Capture, onSelect: @escaping ((ScreenRecorder, CGSize) -> Void)) {
         self.capture = capture
         self.selecting = true
         self.onSelect = onSelect

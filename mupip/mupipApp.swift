@@ -22,16 +22,16 @@ struct mupipApp: App {
     private let logger = Logger()
         
     var body: some Scene {
-        MenuBarExtra("mupip", systemImage: "hammer") {
+        MenuBarExtra("mupip", systemImage: "camera.on.rectangle.fill") {
             Menu("Capture") {
                 Button("Display") {
-                    selectionHandler.select(capture: .display(nil), onSelect: { [self] (screenRecorder: ScreenRecorder) in
-                        newCapture(screenRecorder: screenRecorder)
+                    selectionHandler.select(capture: .display(nil), onSelect: { [self] (screenRecorder: ScreenRecorder, frame: CGSize) in
+                        newCapture(screenRecorder: screenRecorder, frame: frame)
                     })
                 }
                 Button("Window") {
-                    selectionHandler.select(capture: .window(nil), onSelect: { [self] (screenRecorder: ScreenRecorder) in
-                        newCapture(screenRecorder: screenRecorder)
+                    selectionHandler.select(capture: .window(nil), onSelect: { [self] (screenRecorder: ScreenRecorder, frame: CGSize) in
+                        newCapture(screenRecorder: screenRecorder, frame: frame)
                     })
                 }
                 Button("Selection") {
@@ -46,7 +46,7 @@ struct mupipApp: App {
         }
     }
     
-    func newCapture(screenRecorder: ScreenRecorder) {
+    func newCapture(screenRecorder: ScreenRecorder, frame: CGSize) {
         Task {
             await self.multiScreenRecorder.add(screenRecorder: screenRecorder)
         }
@@ -63,13 +63,10 @@ struct mupipApp: App {
                     windows.remove(at: i)
                 }
             }
+
         })
         
         newWindow = NSWindow(contentViewController: NSHostingController(rootView: contentView))
-        
-        var frame = newWindow!.frame
-        frame.size = NSSize(width: 200, height: 200)
-        newWindow!.setFrame(frame, display: true)
         
         newWindow!.titleVisibility = .hidden
         newWindow!.titlebarAppearsTransparent = true
@@ -82,7 +79,11 @@ struct mupipApp: App {
         newWindow!.styleMask = .borderless
         newWindow!.isMovableByWindowBackground = true
         newWindow!.styleMask = .resizable
-             
+        
+        var windowFrame = newWindow!.frame
+        windowFrame.size = NSSize(width: round(frame.width * (200 / frame.height)), height: 200)
+        newWindow!.setFrame(windowFrame, display: true)
+        newWindow!.aspectRatio = NSMakeSize(round(frame.width * (200 / frame.height)), 200)
         windows.append(newWindow!)
     }
 

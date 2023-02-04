@@ -6,6 +6,7 @@ struct ContentView: View {
     
     @StateObject var screenRecorder: ScreenRecorder
     @State private var isHovered: Bool = false
+    
     var onDelete: (ScreenRecorder) -> Void
     
     var body: some View {
@@ -19,12 +20,19 @@ struct ContentView: View {
                     }
                 }
 
+                            
             if self.isHovered {
                 Button(action: {
                     self.onDelete(self.screenRecorder)
                 }) {
-                    Image(systemName: "trash.fill")
+                    Image(systemName: "xmark.square.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.gray)
                 }
+                .buttonStyle(.plain)
+                .controlSize(.large)
                 .padding(.trailing, 10)
                 .padding(.top, 10)
             }
