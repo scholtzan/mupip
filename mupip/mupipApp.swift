@@ -76,9 +76,9 @@ struct mupipApp: App {
         newWindow!.standardWindowButton(.miniaturizeButton)!.isHidden = true
         newWindow!.standardWindowButton(.zoomButton)!.isHidden = true
         newWindow!.standardWindowButton(.closeButton)!.isHidden = true
-        newWindow!.styleMask = .borderless
+        newWindow!.styleMask = [.borderless, .resizable]
         newWindow!.isMovableByWindowBackground = true
-        newWindow!.styleMask = .resizable
+        newWindow!.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         
         var windowFrame = newWindow!.frame
         windowFrame.size = NSSize(width: round(frame.width * (200 / frame.height)), height: 200)
