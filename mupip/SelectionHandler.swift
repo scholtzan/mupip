@@ -42,7 +42,7 @@ class SelectionHandler {
                     
                     let mouseLocation = NSEvent.mouseLocation
                     let availableDisplays = self.availableShareableContent!.displays
-                    let displayWithMouse = (availableDisplays.first { NSMouseInRect(mouseLocation, $0.frame, false) })
+                    let displayWithMouse = (availableDisplays.first { self.mouseOnDisplay(mouseLocation: mouseLocation, frame: $0.frame) })
                     
                     var currentScreen: NSScreen? = nil
                     for screen in NSScreen.screens {
@@ -70,7 +70,9 @@ class SelectionHandler {
                                 }
                             }
                         case .display(_):
-                            selection!.setFrame(currentScreen!.frame, display: true)
+                            if currentScreen != nil {
+                                selection!.setFrame(currentScreen!.frame, display: true)
+                            }
                         case .portion(_):
                             break
                         }
@@ -132,9 +134,11 @@ class SelectionHandler {
                             self.selection?.close()
                             self.selecting = false
                         case .display(_):
-                            let newScreenRecorder = ScreenRecorder()
-                            newScreenRecorder.capture = .display(displayWithMouse)
-                            self.onSelect!(newScreenRecorder, currentScreen!.frame.size)
+                            if currentScreen != nil {
+                                let newScreenRecorder = ScreenRecorder()
+                                newScreenRecorder.capture = .display(displayWithMouse)
+                                self.onSelect!(newScreenRecorder, currentScreen!.frame.size)
+                            }
 
                             self.selection?.close()
                             self.selecting = false
@@ -149,6 +153,20 @@ class SelectionHandler {
                 }
             )
         }
+    }
+    
+    private func mouseOnDisplay(mouseLocation: CGPoint, frame: CGRect) -> Bool {
+        if mouseLocation.x < frame.minX || mouseLocation.x > frame.maxX {
+            return false
+        }
+        
+        let normalizedY = (frame.height - (mouseLocation.y - frame.minY))
+        
+        if normalizedY < frame.minY || normalizedY > frame.maxY {
+            return false
+        }
+
+        return true
     }
     
     private func selectionRect(origin: CGPoint, mouseLocation: CGPoint) -> CGRect {
