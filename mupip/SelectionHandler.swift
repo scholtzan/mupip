@@ -40,6 +40,8 @@ class SelectionHandler {
                         return event
                     }
                     
+                    NSCursor.crosshair.push()
+                    
                     let mouseLocation = NSEvent.mouseLocation
                     let availableDisplays = self.availableShareableContent!.displays
                     let displayWithMouse = (availableDisplays.first { self.mouseOnDisplay(mouseLocation: mouseLocation, frame: $0.frame) })
@@ -54,6 +56,7 @@ class SelectionHandler {
                     switch event.type {
                     case .keyDown:
                         if Int(event.keyCode) == kVK_Escape {
+                            NSCursor.pop()
                             self.selection?.close()
                             self.selecting = false
                             for overlay in self.selectionOverlays {
@@ -119,6 +122,7 @@ class SelectionHandler {
                                 overlay.close()
                             }
                             self.selectionOverlays =  []
+                            NSCursor.pop()
                         }
                     case .leftMouseDown, .rightMouseDown:
                         switch capture {
@@ -142,6 +146,7 @@ class SelectionHandler {
 
                             self.selection?.close()
                             self.selecting = false
+                            NSCursor.pop()
                         case .portion(_):
                             break
                         }
@@ -207,6 +212,7 @@ class SelectionHandler {
         }
         
         self.selection = NSWindow()
+        self.selection?.setFrame(NSRect(x: 0, y: 0, width: 0, height: 0), display: false)
         self.selection?.isReleasedWhenClosed = false
         self.selection!.titlebarAppearsTransparent = true
         self.selection!.makeKeyAndOrderFront(nil)
