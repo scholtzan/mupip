@@ -18,10 +18,15 @@ struct CapturedFrame {
     var size: CGSize { contentRect.size }
 }
 
+struct Portion {
+    let display: SCDisplay
+    let sourceRect: CGRect
+}
+
 enum Capture {
     case display(SCDisplay?)
     case window(SCWindow?)
-    // case portion
+    case portion(Portion?)
 }
 
 @MainActor
@@ -72,6 +77,12 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
                 streamConfig.width = Int(window!.frame.width)
                 streamConfig.height = Int(window!.frame.height)
             }
+        case .portion(let portion):
+            if portion != nil {
+                streamConfig.sourceRect = portion!.sourceRect
+                streamConfig.width = Int(portion!.sourceRect.width)
+                streamConfig.height = Int(portion!.sourceRect.height)
+            }
         }
         
         streamConfig.minimumFrameInterval = CMTime(value: 1, timescale: 30)
@@ -88,6 +99,9 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
         case .window(let window):
             guard window != nil else { fatalError("No window selected") }
             filter = SCContentFilter(desktopIndependentWindow: window!)
+        case .portion(let portion):
+            guard portion != nil else { fatalError("No screen portion selected") }
+            filter = SCContentFilter(display: portion!.display, excludingWindows: [])
         }
         
         return filter
@@ -175,6 +189,14 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             case .window(let window):
                 if window == nil {
                     self.capture = .window(availableWindows.first)
+                }
+            case .portion(let portion):
+                if portion == nil {
+                    if let display = availableDisplays.first {
+                        self.capture = .portion(Portion(display: display, sourceRect: display.frame))
+                    } else {
+                        self.capture = .portion(nil)
+                    }
                 }
             }
         } catch {

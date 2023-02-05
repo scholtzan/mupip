@@ -17,9 +17,10 @@ class SelectionHandler {
     
     private var eventMonitor: Any?
     private var selection: NSWindow? = nil
+    private var selectOrigin: CGPoint? = nil
     private var onSelect: ((ScreenRecorder, CGSize) -> Void)? = nil
-    
     private var availableShareableContent: SCShareableContent? = nil
+    private var selectionOverlays: [NSWindow] = []
     
     private let logger = Logger()
     
@@ -33,7 +34,7 @@ class SelectionHandler {
     func start() async {
         do {
             self.eventMonitor = NSEvent.addLocalMonitorForEvents(
-                matching: [NSEvent.EventTypeMask.keyDown, NSEvent.EventTypeMask.mouseMoved, NSEvent.EventTypeMask.leftMouseDown, NSEvent.EventTypeMask.rightMouseDown],
+                matching: [NSEvent.EventTypeMask.keyDown, NSEvent.EventTypeMask.mouseMoved, NSEvent.EventTypeMask.leftMouseDown, NSEvent.EventTypeMask.rightMouseDown, NSEvent.EventTypeMask.leftMouseDragged, NSEvent.EventTypeMask.leftMouseUp],
                 handler: { [self] (event: NSEvent) in
                     if !self.selecting {
                         return event
@@ -52,10 +53,13 @@ class SelectionHandler {
                     
                     switch event.type {
                     case .keyDown:
-
                         if Int(event.keyCode) == kVK_Escape {
                             self.selection?.close()
                             self.selecting = false
+                            for overlay in self.selectionOverlays {
+                                overlay.close()
+                            }
+                            self.selectionOverlays =  []
                         }
                     case .mouseMoved:
                         switch capture {
@@ -67,6 +71,52 @@ class SelectionHandler {
                             }
                         case .display(_):
                             selection!.setFrame(currentScreen!.frame, display: true)
+                        case .portion(_):
+                            break
+                        }
+                    case .leftMouseDragged:
+                        switch capture {
+                        case .window(_), .display(_):
+                            break
+                        case .portion(_):
+                            if let origin = self.selectOrigin {
+                                selection!.setFrame(self.selectionRect(origin: origin, mouseLocation: mouseLocation), display: true)
+                            } else {
+                                self.selectOrigin = mouseLocation
+                            }
+                        }
+                    case .leftMouseUp:
+                        switch capture {
+                        case .display(_), .window(_):
+                            break
+                        case .portion(_):
+                            if let display = displayWithMouse {
+                                if let origin = self.selectOrigin {
+                                    let selectionRect = self.selectionRect(origin: origin, mouseLocation: mouseLocation)
+                                    
+                                    let y = (currentScreen!.frame.height - (selectionRect.minY - currentScreen!.frame.minY)) - selectionRect.height
+
+                                    let selectionFrame = NSRect(
+                                        x: selectionRect.minX - currentScreen!.frame.minX,
+                                        y: y,
+                                        width: selectionRect.width,
+                                        height: selectionRect.height
+                                    )
+                                    
+                                    let newScreenRecorder = ScreenRecorder()
+                                    newScreenRecorder.capture = .portion(Portion(display: display, sourceRect: selectionFrame))
+                                    self.onSelect!(newScreenRecorder, selectionRect.size)
+                                }
+                            }
+
+                            self.selectOrigin = nil
+                            self.selection?.close()
+                            self.selecting = false
+                            
+                            for overlay in self.selectionOverlays {
+                                overlay.close()
+                            }
+                            self.selectionOverlays =  []
                         }
                     case .leftMouseDown, .rightMouseDown:
                         switch capture {
@@ -88,6 +138,8 @@ class SelectionHandler {
 
                             self.selection?.close()
                             self.selecting = false
+                        case .portion(_):
+                            break
                         }
                     default:
                         break
@@ -99,10 +151,42 @@ class SelectionHandler {
         }
     }
     
+    private func selectionRect(origin: CGPoint, mouseLocation: CGPoint) -> CGRect {
+        var x1: CGFloat = 0
+        var x2: CGFloat = 0
+        var y1: CGFloat = 0
+        var y2: CGFloat = 0
+        
+        if origin.x > mouseLocation.x {
+            x2 = origin.x
+            x1 = mouseLocation.x
+        } else {
+            x2 = mouseLocation.x
+            x1 = origin.x
+        }
+        
+        if origin.y > mouseLocation.y {
+            y2 = origin.y
+            y1 = mouseLocation.y
+        } else {
+            y2 = mouseLocation.y
+            y1 = origin.y
+        }
+        
+        return CGRect(x: x1, y: y1, width: abs(x2 - x1), height: abs(y2 - y1))
+    }
+    
     func select(capture: Capture, onSelect: @escaping ((ScreenRecorder, CGSize) -> Void)) {
         self.capture = capture
         self.selecting = true
         self.onSelect = onSelect
+        
+        switch capture {
+        case .portion(_):
+            self.showSelectionOverlays()
+        default:
+            break
+        }
         
         self.selection = NSWindow()
         self.selection?.isReleasedWhenClosed = false
@@ -112,9 +196,25 @@ class SelectionHandler {
         self.selection!.styleMask = .borderless
         self.selection!.level = .popUpMenu
         self.selection!.backgroundColor = NSColor(red: 0.0, green: 0.0, blue: 1.0, alpha: 0.5)
-        
+
         Task {
             self.availableShareableContent = try await SCShareableContent.excludingDesktopWindows(true, onScreenWindowsOnly: false)
+        }
+    }
+    
+    private func showSelectionOverlays() {
+        for screen in NSScreen.screens {
+            let overlayWindow = NSWindow()
+            overlayWindow.isReleasedWhenClosed = false
+            overlayWindow.titlebarAppearsTransparent = true
+            overlayWindow.makeKeyAndOrderFront(nil)
+            overlayWindow.titleVisibility = .hidden
+            overlayWindow.styleMask = .borderless
+            overlayWindow.level = .popUpMenu
+            overlayWindow.backgroundColor = NSColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.001)
+            overlayWindow.setFrame(screen.frame, display: true)
+            
+            self.selectionOverlays.append(overlayWindow)
         }
     }
     

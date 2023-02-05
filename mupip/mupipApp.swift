@@ -35,7 +35,9 @@ struct mupipApp: App {
                     })
                 }
                 Button("Selection") {
-                    // todo
+                    selectionHandler.select(capture: .portion(nil), onSelect: { [self] (screenRecorder: ScreenRecorder, frame: CGSize) in
+                        newCapture(screenRecorder: screenRecorder, frame: frame)
+                    })
                 }
             }
             Divider()
