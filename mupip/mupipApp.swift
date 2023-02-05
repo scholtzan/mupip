@@ -40,12 +40,28 @@ struct mupipApp: App {
                     })
                 }
             }
+            Button("Close All Captures") {
+                self.closeAllCaptures()
+            }.keyboardShortcut("c")
+            
             Divider()
             
-            Button("Close") {
+            Button("Quit") {
                 NSApplication.shared.terminate(nil)
             }.keyboardShortcut("q")
         }
+    }
+    
+    func closeAllCaptures() {
+        Task {
+            await multiScreenRecorder.removeAll()
+        }
+        
+        for window in self.windows {
+            window.close()
+        }
+        
+        self.windows = []
     }
     
     func newCapture(screenRecorder: ScreenRecorder, frame: CGSize) {
