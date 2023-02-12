@@ -9,6 +9,8 @@ import Foundation
 import OSLog
 import ScreenCaptureKit
 import Combine
+import Cocoa
+import Accelerate
 
 struct CapturedFrame {
     let surface: IOSurface?
@@ -19,7 +21,7 @@ struct CapturedFrame {
 }
 
 struct Portion {
-    let display: SCDisplay
+    let window: SCWindow
     let sourceRect: CGRect
 }
 
@@ -32,6 +34,7 @@ enum Capture {
 @MainActor
 class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     let id = UUID()
+    private var cropRect: CGRect? = nil
     
     nonisolated static func == (lhs: ScreenRecorder, rhs: ScreenRecorder) -> Bool {
         return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
@@ -71,17 +74,20 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             if display != nil {
                 streamConfig.width = display!.width
                 streamConfig.height = display!.height
+                streamConfig.pixelFormat = kCVPixelFormatType_32BGRA
             }
         case .window(let window):
             if window != nil {
                 streamConfig.width = Int(window!.frame.width)
                 streamConfig.height = Int(window!.frame.height)
+                streamConfig.pixelFormat = kCVPixelFormatType_32BGRA
             }
         case .portion(let portion):
             if portion != nil {
-                streamConfig.sourceRect = portion!.sourceRect
-                streamConfig.width = Int(portion!.sourceRect.width)
-                streamConfig.height = Int(portion!.sourceRect.height)
+                streamConfig.width = Int(portion!.window.frame.width)
+                streamConfig.height = Int(portion!.window.frame.height)
+                streamConfig.pixelFormat = kCVPixelFormatType_32BGRA
+                self.cropRect = portion?.sourceRect
             }
         }
         
@@ -100,8 +106,8 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             guard window != nil else { fatalError("No window selected") }
             filter = SCContentFilter(desktopIndependentWindow: window!)
         case .portion(let portion):
-            guard portion != nil else { fatalError("No screen portion selected") }
-            filter = SCContentFilter(display: portion!.display, excludingWindows: [])
+            guard portion != nil else { fatalError("No window portion selected") }
+            filter = SCContentFilter(desktopIndependentWindow: portion!.window)
         }
         
         return filter
@@ -132,7 +138,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             isRunning = true
             
             let capturedFrames = AsyncThrowingStream<CapturedFrame, Error> { continuation in
-                let streamOutput = CapturedStreamOutput(continuation: continuation)
+                let streamOutput = CapturedStreamOutput(continuation: continuation, cropRect: self.cropRect)
                 streamOutput.capturedFrameHandler = { continuation.yield($0) }
                 
                 do {
@@ -143,7 +149,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
                     continuation.finish(throwing: error)
                 }
             }
-            
+                      
             for try await frame in capturedFrames {
                 captureView.updateFrame(frame)
                 
@@ -192,8 +198,8 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
                 }
             case .portion(let portion):
                 if portion == nil {
-                    if let display = availableDisplays.first {
-                        self.capture = .portion(Portion(display: display, sourceRect: display.frame))
+                    if let window = availableWindows.first {
+                        self.capture = .portion(Portion(window: window, sourceRect: window.frame))
                     } else {
                         self.capture = .portion(nil)
                     }
@@ -221,9 +227,11 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
     var capturedFrameHandler: ((CapturedFrame) -> Void)?
     
     private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
+    private var cropRect: CGRect?
     
-    init(continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?) {
+    init(continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?, cropRect: CGRect?) {
         self.continuation = continuation
+        self.cropRect = cropRect
     }
     
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of outputType: SCStreamOutputType) {
@@ -231,7 +239,7 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
         
         switch outputType {
         case .screen:
-            guard let frame = createFrame(for: sampleBuffer) else { return }
+            guard let frame = createFrame(for: sampleBuffer, cropRect: self.cropRect) else { return }
             capturedFrameHandler?(frame)
         case .audio:
             return
@@ -240,23 +248,35 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
         }
     }
     
-    private func createFrame(for sampleBuffer: CMSampleBuffer) -> CapturedFrame? {
+    private func createFrame(for sampleBuffer: CMSampleBuffer, cropRect: CGRect?) -> CapturedFrame? {
         guard let attachmentsArray = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
               let attachments = attachmentsArray.first else { return nil }
         
         guard let statusRawValue = attachments[SCStreamFrameInfo.status] as? Int, let status = SCFrameStatus(rawValue: statusRawValue), status == .complete else { return nil }
+
+        var pixelBuffer: CVPixelBuffer?
         
-        guard let pixelBuffer = sampleBuffer.imageBuffer else { return nil }
+        if cropRect == nil {
+            pixelBuffer = sampleBuffer.imageBuffer
+        } else {
+            pixelBuffer = sampleBuffer.imageBuffer!.crop(to: cropRect!)
+        }
         
         guard let surfaceRef = CVPixelBufferGetIOSurface(pixelBuffer)?.takeUnretainedValue() else { return nil }
         
+        
         let surface = unsafeBitCast(surfaceRef, to: IOSurface.self)
         
-        guard let contentRectDict = attachments[.contentRect], let contentRect = CGRect(dictionaryRepresentation: contentRectDict as! CFDictionary),
+        guard let contentRectDict = attachments[.contentRect], var contentRect = CGRect(dictionaryRepresentation: contentRectDict as! CFDictionary),
               let contentScale = attachments[.contentScale] as? CGFloat,
               let scaleFactor = attachments[.scaleFactor] as? CGFloat else { return nil }
         
+        if cropRect != nil {
+            contentRect = cropRect!
+        }
+        
         let frame = CapturedFrame(surface: surface, contentRect: contentRect, contentScale: contentScale, scaleFactor: scaleFactor)
+        
         return frame
     }
     
@@ -264,3 +284,5 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
         continuation?.finish(throwing: error)
     }
 }
+
+

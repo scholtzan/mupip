@@ -34,7 +34,7 @@ struct mupipApp: App {
                         newCapture(screenRecorder: screenRecorder, frame: frame)
                     })
                 }
-                Button("Selection") {
+                Button("Window Portion") {
                     selectionHandler.select(capture: .portion(nil), onSelect: { [self] (screenRecorder: ScreenRecorder, frame: CGSize) in
                         newCapture(screenRecorder: screenRecorder, frame: frame)
                     })

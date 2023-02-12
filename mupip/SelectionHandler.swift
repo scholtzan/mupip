@@ -21,6 +21,7 @@ class SelectionHandler {
     private var onSelect: ((ScreenRecorder, CGSize) -> Void)? = nil
     private var availableShareableContent: SCShareableContent? = nil
     private var selectionOverlays: [NSWindow] = []
+    private var currentSelectedWindow: (frame: NSRect, window: SCWindow)? = nil
     
     private let logger = Logger()
     
@@ -63,6 +64,7 @@ class SelectionHandler {
                                 overlay.close()
                             }
                             self.selectionOverlays =  []
+                            self.currentSelectedWindow = nil
                         }
                     case .mouseMoved:
                         switch capture {
@@ -85,9 +87,27 @@ class SelectionHandler {
                             break
                         case .portion(_):
                             if let origin = self.selectOrigin {
-                                selection!.setFrame(self.selectionRect(origin: origin, mouseLocation: mouseLocation), display: true)
+                                if let currentWindow = self.currentSelectedWindow {
+                                    selection!.setFrame(self.selectionRect(origin: origin, mouseLocation: mouseLocation, windowFrame: currentWindow.frame), display: true)
+                                }
                             } else {
-                                self.selectOrigin = mouseLocation
+                                if currentScreen != nil {
+                                    if let windowWithMouse = self.windowWithMouse(mouseLocation: mouseLocation, currentScreen: currentScreen!) {
+                                        self.selectOrigin = mouseLocation
+                                        self.currentSelectedWindow = windowWithMouse
+                                    } else {
+                                        self.selectOrigin = nil
+                                        self.selection?.close()
+                                        self.selecting = false
+                                        self.currentSelectedWindow = nil
+                                        
+                                        for overlay in self.selectionOverlays {
+                                            overlay.close()
+                                        }
+                                        self.selectionOverlays =  []
+                                        NSCursor.pop()
+                                    }
+                                }
                             }
                         }
                     case .leftMouseUp:
@@ -95,28 +115,30 @@ class SelectionHandler {
                         case .display(_), .window(_):
                             break
                         case .portion(_):
-                            if let display = displayWithMouse {
-                                if let origin = self.selectOrigin {
-                                    let selectionRect = self.selectionRect(origin: origin, mouseLocation: mouseLocation)
-                                    
-                                    let y = (currentScreen!.frame.height - (selectionRect.minY - currentScreen!.frame.minY)) - selectionRect.height
+                            if let origin = self.selectOrigin {
+                                if let window = self.currentSelectedWindow {
+                                    let selectionRect = self.selectionRect(origin: origin, mouseLocation: mouseLocation, windowFrame: window.frame)
 
+                                    let y = (window.frame.height - (selectionRect.minY - window.frame.minY)) - selectionRect.height
+                                    
                                     let selectionFrame = NSRect(
-                                        x: selectionRect.minX - currentScreen!.frame.minX,
-                                        y: y,
-                                        width: selectionRect.width,
-                                        height: selectionRect.height
+                                        x: Int(selectionRect.minX - window.frame.minX),
+                                        y: Int(y),
+                                        width: Int(selectionRect.width),
+                                        height: Int(selectionRect.height)
                                     )
                                     
                                     let newScreenRecorder = ScreenRecorder()
-                                    newScreenRecorder.capture = .portion(Portion(display: display, sourceRect: selectionFrame))
+                                    newScreenRecorder.capture = .portion(Portion(window: window.window, sourceRect: selectionFrame))
                                     self.onSelect!(newScreenRecorder, selectionRect.size)
                                 }
                             }
 
+                            // todo: clearSelection method
                             self.selectOrigin = nil
                             self.selection?.close()
                             self.selecting = false
+                            self.currentSelectedWindow = nil
                             
                             for overlay in self.selectionOverlays {
                                 overlay.close()
@@ -174,26 +196,30 @@ class SelectionHandler {
         return true
     }
     
-    private func selectionRect(origin: CGPoint, mouseLocation: CGPoint) -> CGRect {
+    private func selectionRect(origin: CGPoint, mouseLocation: CGPoint, windowFrame: CGRect) -> CGRect {
         var x1: CGFloat = 0
         var x2: CGFloat = 0
         var y1: CGFloat = 0
         var y2: CGFloat = 0
         
-        if origin.x > mouseLocation.x {
-            x2 = origin.x
-            x1 = mouseLocation.x
-        } else {
-            x2 = mouseLocation.x
-            x1 = origin.x
+        if mouseLocation.x <= windowFrame.maxX && mouseLocation.x >= windowFrame.minX {
+            if origin.x > mouseLocation.x {
+                x2 = origin.x
+                x1 = mouseLocation.x
+            } else {
+                x2 = mouseLocation.x
+                x1 = origin.x
+            }
         }
         
-        if origin.y > mouseLocation.y {
-            y2 = origin.y
-            y1 = mouseLocation.y
-        } else {
-            y2 = mouseLocation.y
-            y1 = origin.y
+        if mouseLocation.y <= windowFrame.maxY && mouseLocation.y >= windowFrame.minY {
+            if origin.y > mouseLocation.y {
+                y2 = origin.y
+                y1 = mouseLocation.y
+            } else {
+                y2 = mouseLocation.y
+                y1 = origin.y
+            }
         }
         
         return CGRect(x: x1, y: y1, width: abs(x2 - x1), height: abs(y2 - y1))
@@ -300,5 +326,6 @@ class SelectionHandler {
             .sorted { $0.owningApplication?.applicationName ?? "" < $1.owningApplication?.applicationName ?? "" }
             .filter { $0.owningApplication != nil && $0.owningApplication?.applicationName != "" }
             .filter { $0.owningApplication?.bundleIdentifier != Bundle.main.bundleIdentifier }
+            .filter { $0.isOnScreen }
     }
 }
