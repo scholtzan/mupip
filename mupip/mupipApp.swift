@@ -82,6 +82,9 @@ struct mupipApp: App {
                 }
             }
 
+        }, onGoToCapture: {
+            [self] (screenRecorder: ScreenRecorder) in
+            self.goToCapture(screenRecorder: screenRecorder)
         })
         
         newWindow = NSWindow(contentViewController: NSHostingController(rootView: contentView))
@@ -103,6 +106,46 @@ struct mupipApp: App {
         newWindow!.setFrame(windowFrame, display: true)
         newWindow!.aspectRatio = NSMakeSize(round(frame.width * (200 / frame.height)), 200)
         windows.append(newWindow!)
+    }
+    
+    func goToCapture(screenRecorder: ScreenRecorder) -> Void {
+        var windowID: CGWindowID? = nil
+        
+        switch screenRecorder.capture {
+        case .display(_):
+            break
+        case .window(let window):
+            if window != nil {
+                windowID = window!.windowID
+            }
+        case .portion(let portion):
+            if portion != nil {
+                windowID = portion!.window.windowID
+            }
+        }
+        
+        if windowID != nil {
+            if let availableWindows = CGWindowListCopyWindowInfo(.optionAll, kCGNullWindowID) as? [[ String : Any]] {
+                if let window = (availableWindows.first { $0[kCGWindowNumber as String] as! Int == windowID! }) {
+                    let ownerPID = window[kCGWindowOwnerPID as String] as! Int
+                    let windowIndex = availableWindows
+                      .filter { $0[kCGWindowOwnerPID as String] as! Int == ownerPID }
+                      .firstIndex { $0[kCGWindowNumber as String] as! Int == windowID! }
+                    
+                    var axElements: AnyObject?
+                    let appID = AXUIElementCreateApplication(pid_t(ownerPID))
+                    AXUIElementCopyAttributeValue(appID, kAXWindowsAttribute as CFString, &axElements)
+                    let axWindows = axElements as! [AXUIElement]
+                    
+                    if windowIndex != nil && windowIndex! < axWindows.count {
+                        let app = NSRunningApplication(processIdentifier: pid_t(ownerPID))
+                        let axWindow = axWindows[windowIndex!]
+                        app!.activate(options: [.activateIgnoringOtherApps])
+                        AXUIElementPerformAction(axWindow, kAXRaiseAction as CFString)
+                    }
+                }
+            }
+        }
     }
 
 }

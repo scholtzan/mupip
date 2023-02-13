@@ -51,7 +51,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     @Published var capture: Capture = .display(nil) {
         didSet { update() }
     }
-    
+       
     @Published var contentSize = CGSize(width: 1, height: 1)
     
     private var isSetup = false
@@ -284,5 +284,3 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
         continuation?.finish(throwing: error)
     }
 }
-
-
