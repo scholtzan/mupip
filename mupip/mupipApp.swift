@@ -65,6 +65,7 @@ struct mupipApp: App {
         self.windows = []
     }
     
+
     func newCapture(screenRecorder: ScreenRecorder, frame: CGSize) {
         Task {
             await self.multiScreenRecorder.add(screenRecorder: screenRecorder)
@@ -87,6 +88,13 @@ struct mupipApp: App {
             [self] (screenRecorder: ScreenRecorder) in
             self.goToCapture(screenRecorder: screenRecorder)
         })
+        
+        screenRecorder.onStoppedRunning = { [self] (screenRecorder: ScreenRecorder) in
+            Task {
+                await multiScreenRecorder.remove(screenRecorder: screenRecorder)
+                contentView.onDelete(screenRecorder)
+            }
+        }
         
         newWindow = NSWindow(contentViewController: NSHostingController(rootView: contentView))
         

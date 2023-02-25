@@ -46,7 +46,15 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     
     private let logger = Logger()
     
-    @Published var isRunning = false
+    var onStoppedRunning: ((ScreenRecorder) -> Void)? = nil
+    
+    @Published var isRunning = false {
+        didSet {
+            if isRunning == false && onStoppedRunning != nil {
+                onStoppedRunning!(self)
+            }
+        }
+    }
     
     @Published var capture: Capture = .display(nil) {
         didSet { update() }
