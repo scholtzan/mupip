@@ -18,6 +18,7 @@ struct mupipApp: App {
     @State private var hoveredView: Int? = nil
     private var selectionHandler = SelectionHandler()
     @State private var windows: [NSWindow] = [NSWindow]()
+    private var showControlPermissionDialog = true
         
     private let logger = Logger()
         

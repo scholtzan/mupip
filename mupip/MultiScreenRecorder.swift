@@ -12,6 +12,12 @@ import ScreenCaptureKit
 class MultiScreenRecorder: ObservableObject {
     @Published var screenRecorders: [ScreenRecorder] = [ScreenRecorder()]
     
+    init() {
+        if !AXIsProcessTrusted() {
+            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+        }
+    }
+    
     var hasRecordingPermissions: Bool {
         get async {
             do {
@@ -19,6 +25,16 @@ class MultiScreenRecorder: ObservableObject {
                     SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
                 return true
             } catch {
+                return false
+            }
+        }
+    }
+    
+    var hasWindowControlPermissions: Bool {
+        get {
+            if AXIsProcessTrusted() {
+                return true
+            } else {
                 return false
             }
         }
