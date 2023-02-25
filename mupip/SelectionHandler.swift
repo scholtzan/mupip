@@ -210,6 +210,12 @@ class SelectionHandler {
                 x2 = mouseLocation.x
                 x1 = origin.x
             }
+        } else if mouseLocation.x > windowFrame.maxX {
+            x2 = windowFrame.maxX
+            x1 = origin.x
+        } else if mouseLocation.x < windowFrame.minX {
+            x2 = origin.x
+            x1 = windowFrame.minX
         }
         
         if mouseLocation.y <= windowFrame.maxY && mouseLocation.y >= windowFrame.minY {
@@ -220,6 +226,12 @@ class SelectionHandler {
                 y2 = mouseLocation.y
                 y1 = origin.y
             }
+        } else if mouseLocation.y > windowFrame.maxY {
+            y2 = windowFrame.maxY
+            y1 = origin.y
+        } else if mouseLocation.y < windowFrame.minY {
+            y2 = origin.y
+            y1 = windowFrame.minY
         }
         
         return CGRect(x: x1, y: y1, width: abs(x2 - x1), height: abs(y2 - y1))

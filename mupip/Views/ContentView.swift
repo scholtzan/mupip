@@ -37,7 +37,7 @@ struct ContentView: View {
                         }
                         .buttonStyle(.plain)
                         .controlSize(.large)
-                        .padding(.trailing, 10)
+                        .padding(.leading, 10)
                         .padding(.top, 10)
                     default:
                         Spacer()
