@@ -156,7 +156,10 @@ class SelectionHandler {
                                     self.onSelect!(newScreenRecorder, selectedWindow.frame.size)
                                 }
                             }
-                            
+                            for overlay in self.selectionOverlays {
+                                overlay.close()
+                            }
+                            self.selectionOverlays =  []
                             self.selection?.close()
                             self.selecting = false
                         case .display(_):

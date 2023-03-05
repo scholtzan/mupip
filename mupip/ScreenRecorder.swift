@@ -56,6 +56,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
         }
     }
     
+    @Published var isPaused = false
     @Published var capture: Capture = .display(nil) {
         didSet { update() }
     }
@@ -133,7 +134,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     }
     
     func start() async {
-        guard !isRunning else { return }
+//        guard !isRunning else { return }
         
         if !isSetup {
             await record()
@@ -144,6 +145,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             let config = streamConfiguration
             let filter = contentFilter
             isRunning = true
+            isPaused = false
             
             let capturedFrames = AsyncThrowingStream<CapturedFrame, Error> { continuation in
                 let streamOutput = CapturedStreamOutput(continuation: continuation, cropRect: self.cropRect)
@@ -171,15 +173,23 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
         }
     }
     
-    func stop() async {
+    func stop(close: Bool) async {
         guard isRunning else { return }
-        do {
-            try await stream?.stopCapture()
-            continuation?.finish()
-        } catch {
-            continuation?.finish(throwing: error)
+        
+        if !isPaused {
+            do {
+                try await stream?.stopCapture()
+                continuation?.finish()
+            } catch {
+                continuation?.finish(throwing: error)
+            }
         }
-        isRunning = false
+        
+        if close {
+            isRunning = false
+        } else {
+            isPaused = true
+        }
     }
     
     private func filterWindows(_ windows: [SCWindow]) -> [SCWindow] {
