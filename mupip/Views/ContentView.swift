@@ -70,9 +70,9 @@ struct ContentView: View {
                         .padding(.top, 10)
                     }
                     Spacer()
-                    HStack {
+                    HStack(alignment: .center) {
                         Spacer()
-                        if self.screenRecorder.isPaused {
+                        if !self.screenRecorder.isPaused {
                             Button(action: {
                                 Task {
                                     await self.screenRecorder.stop(close: false)

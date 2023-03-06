@@ -41,6 +41,9 @@ struct mupipApp: App {
                     })
                 }
             }
+            Button("Gather Captures") {
+                self.gatherCaptures()
+            }.keyboardShortcut("g")
             Button("Close All Captures") {
                 self.closeAllCaptures()
             }.keyboardShortcut("c")
@@ -65,7 +68,27 @@ struct mupipApp: App {
         self.windows = []
     }
     
-
+    func gatherCaptures() {
+        let mouseLocation = NSEvent.mouseLocation
+        let screens = NSScreen.screens
+        if let activeScreen = (screens.first { NSMouseInRect(mouseLocation, $0.frame, false) }) {
+            let windowRows = Int(Double(windows.count).squareRoot().rounded(.up))
+            for (i, window) in windows.enumerated() {
+                // todo: make standard size configurable
+                let row = Double(windowRows - 1) - Double((i + 1) % windowRows)
+                let col = Double((Double(i + 1) / Double(windowRows)).rounded(.up))
+                let windowSize = NSSize(width: min(round(window.frame.width * (200 / window.frame.height)), 200), height: min(round(window.frame.height * (200 / window.frame.width)), 200))
+                let position = CGPoint(x: activeScreen.visibleFrame.maxX - col * 210, y: activeScreen.visibleFrame.maxY - (row + 1) * 210)
+                
+                print(position)
+                print(windowRows)
+                print(row)
+                
+                window.setFrame(NSRect(origin: position, size: windowSize), display: true)
+            }
+        }
+    }
+    
     func newCapture(screenRecorder: ScreenRecorder, frame: CGSize) {
         Task {
             await self.multiScreenRecorder.add(screenRecorder: screenRecorder)
