@@ -6,6 +6,8 @@ struct ContentView: View {
     
     @StateObject var screenRecorder: ScreenRecorder
     @State private var isHovered: Bool = false
+    @State private var audioAnimationTimer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
+    @State private var audioIcon = 1
     
     var onDelete: (ScreenRecorder) -> Void
     var onGoToCapture: (ScreenRecorder) -> Void
@@ -32,9 +34,9 @@ struct ContentView: View {
                         }
                     }
             }
-                       
-            if self.isHovered {
-                VStack {
+              
+            VStack {
+                if self.isHovered {
                     HStack {
                         switch self.screenRecorder.capture {
                         case .portion(_), .window(_):
@@ -69,48 +71,72 @@ struct ContentView: View {
                         .padding(.trailing, 10)
                         .padding(.top, 10)
                     }
-                    Spacer()
+                }
+                Spacer()
+                ZStack(alignment: Alignment(horizontal: .trailing, vertical: .top), content: {
                     HStack(alignment: .center) {
                         Spacer()
-                        if !self.screenRecorder.isPaused {
-                            Button(action: {
-                                Task {
-                                    await self.screenRecorder.stop(close: false)
+                        if self.isHovered {
+                            if self.screenRecorder.isPaused {
+                                Button(action: {
+                                    Task {
+                                        await self.screenRecorder.stop(close: false)
+                                    }
+                                }) {
+                                    Image(systemName: "play.square.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(.gray)
                                 }
-                            }) {
-                                Image(systemName: "play.square.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(.gray)
-                            }
-                            .buttonStyle(.plain)
-                            .controlSize(.large)
-                            .padding(.bottom, 10)
-                        } else {
-                            Button(action: {
-                                Task {
-                                    await self.screenRecorder.start()
+                                .buttonStyle(.plain)
+                                .controlSize(.large)
+                                .padding(.bottom, 10)
+                            } else {
+                                Button(action: {
+                                    Task {
+                                        await self.screenRecorder.start()
+                                    }
+                                }) {
+                                    Image(systemName: "pause.rectangle.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(.gray)
                                 }
-                            }) {
-                                Image(systemName: "pause.rectangle.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(.gray)
+                                .buttonStyle(.plain)
+                                .controlSize(.regular)
+                                .padding(.bottom, 10)
                             }
-                            .buttonStyle(.plain)
-                            .controlSize(.large)
-                            .padding(.bottom, 10)
                         }
                         Spacer()
                     }
-                }
+                    if screenRecorder.isPlayingAudio {
+                        HStack {
+                            Spacer()
+                            Label("", systemImage: "speaker.wave.\(audioIcon).fill")
+                                .font(.title)
+                                .labelStyle(.iconOnly)
+                                .frame(width: 10, height: 10)
+                                .foregroundColor(.gray)
+                                .controlSize(.mini)
+                                .padding(.bottom, 10)
+                            .padding(.trailing, 10)
+                        }
+                    }
+                })
             }
         })
         .onHover { over in
             if !over {
                 isHovered = false
+            }
+        }
+        .onReceive(audioAnimationTimer) { _ in
+            if audioIcon == 3 {
+                audioIcon = 1
+            } else {
+                audioIcon += 1
             }
         }
     }

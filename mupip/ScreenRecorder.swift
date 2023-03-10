@@ -11,6 +11,7 @@ import ScreenCaptureKit
 import Combine
 import Cocoa
 import Accelerate
+import AVFAudio
 
 struct CapturedFrame {
     let surface: IOSurface?
@@ -63,10 +64,13 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
        
     @Published var contentSize = CGSize(width: 1, height: 1)
     
+    @Published var isPlayingAudio = false
+    
     private var isSetup = false
     private var subscriptions = Set<AnyCancellable>()
     private var stream: SCStream?
     private let videoBufferQueue = DispatchQueue(label: "net.scholtzan.mupip.VideoBufferQueue")
+    private let audioBufferQueue = DispatchQueue(label: "net.scholtzan.mupip.AudioBufferQueue")
     private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
     
     lazy var captureView: CaptureView = {
@@ -75,8 +79,8 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     
     private var streamConfiguration: SCStreamConfiguration {
         let streamConfig = SCStreamConfiguration()
-        streamConfig.capturesAudio = false // todo: allow audio capturing
-        streamConfig.excludesCurrentProcessAudio = true // todo
+        streamConfig.capturesAudio = true
+        streamConfig.excludesCurrentProcessAudio = false
         
         switch capture {
         case .display(let display):
@@ -134,8 +138,6 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     }
     
     func start() async {
-//        guard !isRunning else { return }
-        
         if !isSetup {
             await record()
             isSetup = true
@@ -150,10 +152,12 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             let capturedFrames = AsyncThrowingStream<CapturedFrame, Error> { continuation in
                 let streamOutput = CapturedStreamOutput(continuation: continuation, cropRect: self.cropRect)
                 streamOutput.capturedFrameHandler = { continuation.yield($0) }
+                streamOutput.audioBufferHandler = { self.processAudio(audioBuffer: $0) }
                 
                 do {
                     stream = SCStream(filter: filter, configuration: config, delegate: streamOutput)
                     try stream?.addStreamOutput(streamOutput, type: .screen, sampleHandlerQueue: videoBufferQueue)
+                    try stream?.addStreamOutput(streamOutput, type: .audio, sampleHandlerQueue: audioBufferQueue)
                     stream?.startCapture()
                 } catch {
                     continuation.finish(throwing: error)
@@ -190,6 +194,57 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
         } else {
             isPaused = true
         }
+    }
+    
+    private func processAudio(audioBuffer: AVAudioPCMBuffer) {
+        let channelCount = Int(audioBuffer.format.channelCount)
+        let length = vDSP_Length(audioBuffer.frameLength)
+        var isSilent = true
+        
+        if let floatData = audioBuffer.floatChannelData {
+            for channel in 0..<channelCount {
+                if isSilent {
+                    isSilent = checkSilent(data: floatData[channel], strideFrames: audioBuffer.stride, length: length)
+                }
+            }
+        } else if let int16Data = audioBuffer.int16ChannelData {
+            for channel in 0..<channelCount {
+                var floatChannelData: [Float] = Array(repeating: Float(0.0), count: Int(audioBuffer.frameLength))
+                vDSP_vflt16(int16Data[channel], audioBuffer.stride, &floatChannelData, audioBuffer.stride, length)
+                var scalar = Float(INT16_MAX)
+                vDSP_vsdiv(floatChannelData, audioBuffer.stride, &scalar, &floatChannelData, audioBuffer.stride, length)
+                
+                if isSilent {
+                    isSilent = checkSilent(data: floatChannelData, strideFrames: audioBuffer.stride, length: length)
+                }
+            }
+        } else if let int32Data = audioBuffer.int32ChannelData {
+            for channel in 0..<channelCount {
+                var floatChannelData: [Float] = Array(repeating: Float(0.0), count: Int(audioBuffer.frameLength))
+                vDSP_vflt32(int32Data[channel], audioBuffer.stride, &floatChannelData, audioBuffer.stride, length)
+                var scalar = Float(INT32_MAX)
+                vDSP_vsdiv(floatChannelData, audioBuffer.stride, &scalar, &floatChannelData, audioBuffer.stride, length)
+                
+                if isSilent {
+                    isSilent = checkSilent(data: floatChannelData, strideFrames: audioBuffer.stride, length: length)
+                }
+            }
+        }
+        
+        DispatchQueue.main.async {
+            self.isPlayingAudio = !isSilent
+        }
+    }
+    
+    private func checkSilent(data: UnsafePointer<Float>, strideFrames: Int, length: vDSP_Length) -> Bool {
+        var max: Float = 0.0
+        vDSP_maxv(data, strideFrames, &max, length)
+        
+        if max > 0 {
+            return false
+        }
+        
+        return true
     }
     
     private func filterWindows(_ windows: [SCWindow]) -> [SCWindow] {
@@ -243,6 +298,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
 
 private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
     var capturedFrameHandler: ((CapturedFrame) -> Void)?
+    var audioBufferHandler: ((AVAudioPCMBuffer) -> Void)?
     
     private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
     private var cropRect: CGRect?
@@ -260,7 +316,8 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
             guard let frame = createFrame(for: sampleBuffer, cropRect: self.cropRect) else { return }
             capturedFrameHandler?(frame)
         case .audio:
-            return
+            guard let samples = createAudioBuffer(for: sampleBuffer) else { return }
+            audioBufferHandler?(samples)
         @unknown default:
             fatalError("Unhandled SCStreamOutputType \(outputType)")
         }
@@ -296,6 +353,19 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
         let frame = CapturedFrame(surface: surface, contentRect: contentRect, contentScale: contentScale, scaleFactor: scaleFactor)
         
         return frame
+    }
+    
+    private func createAudioBuffer(for sampleBuffer: CMSampleBuffer) -> AVAudioPCMBuffer? {
+        var audioBufferListPointer: UnsafePointer<AudioBufferList>?
+        try? sampleBuffer.withAudioBufferList { abl, blockBuffer in
+            audioBufferListPointer = abl.unsafePointer
+        }
+        
+        guard let audioBufferList = audioBufferListPointer,
+              let streamDescription = sampleBuffer.formatDescription?.audioStreamBasicDescription,
+              let format = AVAudioFormat(standardFormatWithSampleRate: streamDescription.mSampleRate, channels: streamDescription.mChannelsPerFrame) else { return nil }
+            
+        return AVAudioPCMBuffer(pcmFormat: format, bufferListNoCopy: audioBufferList)
     }
     
     func stream(_ stream: SCStream, didStopWithError error: Error) {
