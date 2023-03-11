@@ -111,9 +111,9 @@ struct ContentView: View {
                         }
                         Spacer()
                     }
-                    if screenRecorder.isPlayingAudio {
-                        HStack {
-                            Spacer()
+                    HStack {
+                        Spacer()
+                        if screenRecorder.isPlayingAudio {
                             Label("", systemImage: "speaker.wave.\(audioIcon).fill")
                                 .font(.title)
                                 .labelStyle(.iconOnly)
@@ -121,7 +121,18 @@ struct ContentView: View {
                                 .foregroundColor(.gray)
                                 .controlSize(.mini)
                                 .padding(.bottom, 10)
-                            .padding(.trailing, 10)
+                                .padding(.trailing, 10)
+                        }
+                        
+                        if screenRecorder.isInactive {
+                            Label("", systemImage: "zzz")
+                                .font(.title)
+                                .labelStyle(.iconOnly)
+                                .frame(width: 10, height: 10)
+                                .foregroundColor(.gray)
+                                .controlSize(.mini)
+                                .padding(.bottom, 10)
+                                .padding(.trailing, 10)
                         }
                     }
                 })

@@ -13,6 +13,11 @@ import Cocoa
 import Accelerate
 import AVFAudio
 
+enum Frame {
+    case captured(CapturedFrame)
+    case idle
+}
+
 struct CapturedFrame {
     let surface: IOSurface?
     let contentRect: CGRect
@@ -20,6 +25,7 @@ struct CapturedFrame {
     let scaleFactor: CGFloat
     var size: CGSize { contentRect.size }
 }
+
 
 struct Portion {
     let window: SCWindow
@@ -65,6 +71,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     @Published var contentSize = CGSize(width: 1, height: 1)
     
     @Published var isPlayingAudio = false
+    @Published var isInactive = false
     
     private var isSetup = false
     private var subscriptions = Set<AnyCancellable>()
@@ -72,6 +79,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     private let videoBufferQueue = DispatchQueue(label: "net.scholtzan.mupip.VideoBufferQueue")
     private let audioBufferQueue = DispatchQueue(label: "net.scholtzan.mupip.AudioBufferQueue")
     private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
+    private var lastUpdated: Date = Date()
     
     lazy var captureView: CaptureView = {
         CaptureView()
@@ -149,7 +157,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             isRunning = true
             isPaused = false
             
-            let capturedFrames = AsyncThrowingStream<CapturedFrame, Error> { continuation in
+            let capturedFrames = AsyncThrowingStream<Frame, Error> { continuation in
                 let streamOutput = CapturedStreamOutput(continuation: continuation, cropRect: self.cropRect)
                 streamOutput.capturedFrameHandler = { continuation.yield($0) }
                 streamOutput.audioBufferHandler = { self.processAudio(audioBuffer: $0) }
@@ -165,10 +173,20 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             }
                       
             for try await frame in capturedFrames {
-                captureView.updateFrame(frame)
-                
-                if contentSize != frame.size {
-                    contentSize = frame.size
+                switch frame {
+                case .idle:
+                    let elapsed = Int(Date().timeIntervalSince(lastUpdated))
+                    if elapsed > 60 { // todo: make configurable
+                        self.isInactive = true
+                    }
+                case .captured(let f):
+                    captureView.updateFrame(f)
+                    self.isInactive = false
+                    self.lastUpdated = Date()
+                    
+                    if contentSize != f.size {
+                        contentSize = f.size
+                    }
                 }
             }
         } catch {
@@ -297,13 +315,13 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
 }
 
 private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
-    var capturedFrameHandler: ((CapturedFrame) -> Void)?
+    var capturedFrameHandler: ((Frame) -> Void)?
     var audioBufferHandler: ((AVAudioPCMBuffer) -> Void)?
     
-    private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
+    private var continuation: AsyncThrowingStream<Frame, Error>.Continuation?
     private var cropRect: CGRect?
     
-    init(continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?, cropRect: CGRect?) {
+    init(continuation: AsyncThrowingStream<Frame, Error>.Continuation?, cropRect: CGRect?) {
         self.continuation = continuation
         self.cropRect = cropRect
     }
@@ -323,11 +341,21 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
         }
     }
     
-    private func createFrame(for sampleBuffer: CMSampleBuffer, cropRect: CGRect?) -> CapturedFrame? {
+    private func createFrame(for sampleBuffer: CMSampleBuffer, cropRect: CGRect?) -> Frame? {
         guard let attachmentsArray = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
               let attachments = attachmentsArray.first else { return nil }
         
-        guard let statusRawValue = attachments[SCStreamFrameInfo.status] as? Int, let status = SCFrameStatus(rawValue: statusRawValue), status == .complete else { return nil }
+        if let statusRawValue = attachments[SCStreamFrameInfo.status] as? Int {
+            let status = SCFrameStatus(rawValue: statusRawValue)
+            if status != .complete {
+                if status == .idle {
+                    return Frame.idle
+                }
+                return nil
+            }
+        } else {
+            return nil
+        }
 
         var pixelBuffer: CVPixelBuffer?
         
@@ -336,7 +364,7 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
         } else {
             pixelBuffer = sampleBuffer.imageBuffer!.crop(to: cropRect!)
         }
-        
+            
         guard let surfaceRef = CVPixelBufferGetIOSurface(pixelBuffer)?.takeUnretainedValue() else { return nil }
         
         
@@ -350,7 +378,7 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
             contentRect = cropRect!
         }
         
-        let frame = CapturedFrame(surface: surface, contentRect: contentRect, contentScale: contentScale, scaleFactor: scaleFactor)
+        let frame = Frame.captured(CapturedFrame(surface: surface, contentRect: contentRect, contentScale: contentScale, scaleFactor: scaleFactor))
         
         return frame
     }
