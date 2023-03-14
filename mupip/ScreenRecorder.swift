@@ -12,6 +12,7 @@ import Combine
 import Cocoa
 import Accelerate
 import AVFAudio
+import SwiftUI
 
 enum Frame {
     case captured(CapturedFrame)
@@ -40,6 +41,9 @@ enum Capture {
 
 @MainActor
 class ScreenRecorder: ObservableObject, Hashable, Identifiable {
+    @AppStorage("refreshFrequency") private var refreshFrequency = DefaultSettings.refreshFrequency
+    @AppStorage("inactivityThreshold") private var inactivityThreshold = DefaultSettings.inactivityThreshold
+    
     let id = UUID()
     private var cropRect: CGRect? = nil
     
@@ -112,8 +116,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             }
         }
         
-        streamConfig.minimumFrameInterval = CMTime(value: 1, timescale: 30)
-        
+        streamConfig.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(refreshFrequency))
         return streamConfig
     }
     
@@ -176,7 +179,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
                 switch frame {
                 case .idle:
                     let elapsed = Int(Date().timeIntervalSince(lastUpdated))
-                    if elapsed > 60 { // todo: make configurable
+                    if elapsed > Int(inactivityThreshold) {
                         self.isInactive = true
                     }
                 case .captured(let f):

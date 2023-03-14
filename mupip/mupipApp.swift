@@ -19,6 +19,10 @@ struct mupipApp: App {
     private var selectionHandler = SelectionHandler()
     @State private var windows: [NSWindow] = [NSWindow]()
     private var showControlPermissionDialog = true
+    
+    @AppStorage("captureHeight") private var captureHeight = DefaultSettings.captureHeight
+    @AppStorage("captureCorner") private var captureCorner = DefaultSettings.captureCorner
+
         
     private let logger = Logger()
         
@@ -29,24 +33,30 @@ struct mupipApp: App {
                     selectionHandler.select(capture: .display(nil), onSelect: { [self] (screenRecorder: ScreenRecorder, frame: CGSize) in
                         newCapture(screenRecorder: screenRecorder, frame: frame)
                     })
-                }
+                }.keyboardShortcut("d")
                 Button("Window") {
                     selectionHandler.select(capture: .window(nil), onSelect: { [self] (screenRecorder: ScreenRecorder, frame: CGSize) in
                         newCapture(screenRecorder: screenRecorder, frame: frame)
                     })
-                }
+                }.keyboardShortcut("w")
                 Button("Window Portion") {
                     selectionHandler.select(capture: .portion(nil), onSelect: { [self] (screenRecorder: ScreenRecorder, frame: CGSize) in
                         newCapture(screenRecorder: screenRecorder, frame: frame)
                     })
-                }
+                }.keyboardShortcut("p")
             }
             Button("Gather Captures") {
                 self.gatherCaptures()
             }.keyboardShortcut("g")
             Button("Close All Captures") {
                 self.closeAllCaptures()
-            }.keyboardShortcut("c")
+            }.keyboardShortcut("x")
+            
+            Divider()
+            
+            Button("Settings...") {
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            }.keyboardShortcut("s")
             
             Divider()
             
@@ -54,6 +64,10 @@ struct mupipApp: App {
                 NSApplication.shared.terminate(nil)
             }.keyboardShortcut("q")
         }
+        
+        Settings {
+            SettingsView()
+        }.defaultSize(CGSize(width: 400, height: 400))
     }
     
     func closeAllCaptures() {
@@ -74,16 +88,31 @@ struct mupipApp: App {
         if let activeScreen = (screens.first { NSMouseInRect(mouseLocation, $0.frame, false) }) {
             let windowRows = Int(Double(windows.count).squareRoot().rounded(.up))
             for (i, window) in windows.enumerated() {
-                // todo: make standard size configurable
                 let row = Double(windowRows - 1) - Double((i + 1) % windowRows)
                 let col = Double((Double(i + 1) / Double(windowRows)).rounded(.up))
-                let windowSize = NSSize(width: min(round(window.frame.width * (200 / window.frame.height)), 200), height: min(round(window.frame.height * (200 / window.frame.width)), 200))
-                let position = CGPoint(x: activeScreen.visibleFrame.maxX - col * 210, y: activeScreen.visibleFrame.maxY - (row + 1) * 210)
+                let windowSize: NSSize = NSSize(
+                    width: min(round(window.frame.width * (CGFloat(captureHeight) / window.frame.height)), CGFloat(captureHeight)),
+                    height: min(round(window.frame.height * (CGFloat(captureHeight) / window.frame.width)), CGFloat(captureHeight))
+                )
+                var x = 0.0
+                var y = 0.0
                 
-                print(position)
-                print(windowRows)
-                print(row)
+                switch captureCorner {
+                case .topRight:
+                    x = activeScreen.visibleFrame.maxX - col * Double(captureHeight + 10)
+                    y = activeScreen.visibleFrame.maxY - (row + 1) * Double(captureHeight + 10)
+                case .topLeft:
+                    x = activeScreen.visibleFrame.minX + (col - 1) * Double(captureHeight + 10)
+                    y = activeScreen.visibleFrame.maxY - (row + 1) * Double(captureHeight + 10)
+                case .bottomRight:
+                    x = activeScreen.visibleFrame.maxX - col * Double(captureHeight + 10)
+                    y = activeScreen.visibleFrame.minY + row * Double(captureHeight + 10)
+                case .bottomLeft:
+                    x = activeScreen.visibleFrame.minX + (col - 1) * Double(captureHeight + 10)
+                    y = activeScreen.visibleFrame.minY + row * Double(captureHeight + 10)
+                }
                 
+                let position = CGPoint(x: x, y: y)
                 window.setFrame(NSRect(origin: position, size: windowSize), display: true)
             }
         }
@@ -134,9 +163,9 @@ struct mupipApp: App {
         newWindow!.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         
         var windowFrame = newWindow!.frame
-        windowFrame.size = NSSize(width: round(frame.width * (200 / frame.height)), height: 200)
+        windowFrame.size = NSSize(width: round(frame.width * (CGFloat(captureHeight) / frame.height)), height: CGFloat(captureHeight))
         newWindow!.setFrame(windowFrame, display: true)
-        newWindow!.aspectRatio = NSMakeSize(round(frame.width * (200 / frame.height)), 200)
+        newWindow!.aspectRatio = NSMakeSize(round(frame.width * (CGFloat(captureHeight) / frame.height)), CGFloat(captureHeight))
         windows.append(newWindow!)
     }
     
