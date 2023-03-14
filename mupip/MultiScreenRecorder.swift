@@ -1,10 +1,3 @@
-//
-//  MultiScreenRecorder.swift
-//  mupip
-//
-//  Created by Anna Scholtz on 2023-01-02.
-//
-
 import Foundation
 import ScreenCaptureKit
 
@@ -12,21 +5,17 @@ import ScreenCaptureKit
 class MultiScreenRecorder: ObservableObject {
     @Published var screenRecorders: [ScreenRecorder] = [ScreenRecorder()]
     
-    init() {
-        if !AXIsProcessTrusted() {
-            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
-        }
-    }
-    
     var hasRecordingPermissions: Bool {
         get async {
-            do {
-                try await
+            var hasPermissions = false
+                do {
+                    try await
                     SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
-                return true
-            } catch {
-                return false
-            }
+                    hasPermissions = true
+                } catch {
+                    hasPermissions = false
+                }
+            return hasPermissions
         }
     }
     

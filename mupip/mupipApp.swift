@@ -10,7 +10,24 @@ import OSLog
 import ScreenCaptureKit
 import Carbon.HIToolbox
 import Cocoa
+import AppKit
 
+class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        if !AXIsProcessTrusted() {
+            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        }
+        
+        Task {
+            do {
+                try await
+                SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
+            } catch {
+                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            }
+        }
+    }
+}
 
 @main
 struct mupipApp: App {
@@ -20,12 +37,14 @@ struct mupipApp: App {
     @State private var windows: [NSWindow] = [NSWindow]()
     private var showControlPermissionDialog = true
     
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var Delegate
+    
     @AppStorage("captureHeight") private var captureHeight = DefaultSettings.captureHeight
     @AppStorage("captureCorner") private var captureCorner = DefaultSettings.captureCorner
 
-        
     private let logger = Logger()
-        
+
+   
     var body: some Scene {
         MenuBarExtra("mupip", systemImage: "camera.on.rectangle.fill") {
             Menu("Capture") {
@@ -66,10 +85,10 @@ struct mupipApp: App {
         }
         
         Settings {
-            SettingsView()
+            SettingsView(multiScreenRecorder: multiScreenRecorder)
         }.defaultSize(CGSize(width: 400, height: 400))
     }
-    
+       
     func closeAllCaptures() {
         Task {
             await multiScreenRecorder.removeAll()

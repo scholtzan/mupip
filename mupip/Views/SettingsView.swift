@@ -23,8 +23,30 @@ struct SettingsView: View {
     @AppStorage("captureHeight") private var captureHeight = DefaultSettings.captureHeight
     @AppStorage("captureCorner") private var captureCorner = DefaultSettings.captureCorner
     
+    @StateObject var multiScreenRecorder: MultiScreenRecorder
+    
     var body: some View {
         VStack {
+            GroupBox("Permissions") {
+                VStack {
+                    HStack {
+                        Text("Grant Screen Recording Permissions")
+                        Button("Open Screen Recording Preferences...") {
+                            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
+                        }
+                        Spacer()
+                    }.frame(maxWidth: .infinity)
+                
+                    HStack {
+                        Text("Grant Window Control Permissions")
+                        Button("Open Privacy Accessibility Preferences...") {
+                            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+                        }
+                        Spacer()
+                    }.frame(maxWidth: .infinity)
+                }
+            }.padding(15).frame(maxWidth: .infinity)
+            
             GroupBox("Capture Settings") {
                 VStack {
                     Slider(
@@ -59,13 +81,9 @@ struct SettingsView: View {
                         }
                     }
                 }
-                
-//                GroupBox("Permissions") {
-//                    "todo"
-//                }
                             
             }.padding(15)
-        }
+        }.padding(15)
     }
 }
 
