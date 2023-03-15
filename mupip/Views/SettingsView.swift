@@ -13,7 +13,7 @@ enum Corner: String, Equatable, CaseIterable {
     case topRight = "Top Right"
     case bottomLeft = "Bottom Left"
     case bottomRight = "Bottom Right"
-    
+
     var localizedName: LocalizedStringKey { LocalizedStringKey(rawValue) }
 }
 
@@ -22,9 +22,9 @@ struct SettingsView: View {
     @AppStorage("inactivityThreshold") private var inactivityThreshold = DefaultSettings.inactivityThreshold
     @AppStorage("captureHeight") private var captureHeight = DefaultSettings.captureHeight
     @AppStorage("captureCorner") private var captureCorner = DefaultSettings.captureCorner
-    
+
     @StateObject var multiScreenRecorder: MultiScreenRecorder
-    
+
     var body: some View {
         VStack {
             GroupBox("Permissions") {
@@ -36,7 +36,7 @@ struct SettingsView: View {
                         }
                         Spacer()
                     }.frame(maxWidth: .infinity)
-                
+
                     HStack {
                         Text("Grant Window Control Permissions")
                         Button("Open Privacy Accessibility Preferences...") {
@@ -46,15 +46,14 @@ struct SettingsView: View {
                     }.frame(maxWidth: .infinity)
                 }
             }.padding(15).frame(maxWidth: .infinity)
-            
+
             GroupBox("Capture Settings") {
                 VStack {
                     Slider(
                         value: $refreshFrequency,
-                        in: 1...60,
+                        in: 1 ... 60,
                         step: 1,
-                        onEditingChanged: { editing in
-                            return
+                        onEditingChanged: { _ in
                         },
                         minimumValueLabel: Text("1Hz"),
                         maximumValueLabel: Text("60Hz"),
@@ -62,10 +61,9 @@ struct SettingsView: View {
                     )
                     Slider(
                         value: $inactivityThreshold,
-                        in: 1...300,
+                        in: 1 ... 300,
                         step: 5,
-                        onEditingChanged: { editing in
-                            return
+                        onEditingChanged: { _ in
                         },
                         minimumValueLabel: Text("1s"),
                         maximumValueLabel: Text("5min"),
@@ -81,9 +79,7 @@ struct SettingsView: View {
                         }
                     }
                 }
-                            
             }.padding(15)
         }.padding(15)
     }
 }
-

@@ -1,17 +1,17 @@
-import SwiftUI
 import OSLog
+import SwiftUI
 
 struct ContentView: View {
     private let logger = Logger()
-    
+
     @StateObject var screenRecorder: ScreenRecorder
     @State private var isHovered: Bool = false
     @State private var audioAnimationTimer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
     @State private var audioIcon = 1
-    
+
     var onDelete: (ScreenRecorder) -> Void
     var onGoToCapture: (ScreenRecorder) -> Void
-    
+
     var body: some View {
         ZStack(alignment: Alignment(horizontal: .trailing, vertical: .top), content: {
             screenRecorder.captureView
@@ -22,7 +22,7 @@ struct ContentView: View {
                         self.isHovered = true
                     }
                 }
-            
+
             if screenRecorder.isPaused {
                 Rectangle()
                     .foregroundColor(Color.black.opacity(0.2))
@@ -34,12 +34,12 @@ struct ContentView: View {
                         }
                     }
             }
-              
+
             VStack {
                 if self.isHovered {
                     HStack {
                         switch self.screenRecorder.capture {
-                        case .portion(_), .window(_):
+                        case .portion(_), .window:
                             Button(action: {
                                 self.onGoToCapture(self.screenRecorder)
                             }) {
@@ -123,7 +123,7 @@ struct ContentView: View {
                                 .padding(.bottom, 10)
                                 .padding(.trailing, 10)
                         }
-                        
+
                         if screenRecorder.isInactive {
                             Label("", systemImage: "zzz")
                                 .font(.title)
