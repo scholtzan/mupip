@@ -1,10 +1,3 @@
-//
-//  mupipApp.swift
-//  mupip
-//
-//  Created by Anna Scholtz on 2022-12-30.
-//
-
 import AppKit
 import Carbon.HIToolbox
 import Cocoa
@@ -14,6 +7,7 @@ import SwiftUI
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_: Notification) {
+        // open settings window if some permissions are missing
         if !AXIsProcessTrusted() {
             NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
         }
@@ -32,10 +26,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 @main
 struct mupipApp: App {
     @StateObject var multiScreenRecorder = MultiScreenRecorder()
-    @State private var hoveredView: Int? = nil
+
+    @State private var windows: [NSWindow] = .init() // capture windows
     private var selectionHandler = SelectionHandler()
-    @State private var windows: [NSWindow] = .init()
-    private var showControlPermissionDialog = true
 
     @NSApplicationDelegateAdaptor(AppDelegate.self) var Delegate
 
@@ -89,6 +82,7 @@ struct mupipApp: App {
     }
 
     func closeAllCaptures() {
+        // remove all capture windows
         Task {
             await multiScreenRecorder.removeAll()
         }
@@ -101,9 +95,13 @@ struct mupipApp: App {
     }
 
     func gatherCaptures() {
+        // move all capture windows into one corner of the active screen
         let mouseLocation = NSEvent.mouseLocation
         let screens = NSScreen.screens
+
+        // get active screen based on mouse location
         if let activeScreen = (screens.first { NSMouseInRect(mouseLocation, $0.frame, false) }) {
+            // align capture windows in the most compact way in one corner
             let windowRows = Int(Double(windows.count).squareRoot().rounded(.up))
             for (i, window) in windows.enumerated() {
                 let row = Double(windowRows - 1) - Double((i + 1) % windowRows)
@@ -137,6 +135,7 @@ struct mupipApp: App {
     }
 
     func newCapture(screenRecorder: ScreenRecorder, frame: CGSize) {
+        // create a new capture
         Task {
             await self.multiScreenRecorder.add(screenRecorder: screenRecorder)
         }
@@ -147,27 +146,28 @@ struct mupipApp: App {
                 await self.multiScreenRecorder.remove(screenRecorder: screenRecorder)
             }
 
+            // remove capture window when screen recorder is closed
             if let window = newWindow {
                 window.close()
                 if let i = windows.firstIndex(of: window) {
                     windows.remove(at: i)
                 }
             }
-
         }, onGoToCapture: {
             [self] (screenRecorder: ScreenRecorder) in
             self.goToCapture(screenRecorder: screenRecorder)
         })
 
         screenRecorder.onStoppedRunning = { [self] (screenRecorder: ScreenRecorder) in
+            // remove screen recorders from MultiScreenRecorder that have stopped
             Task {
                 await multiScreenRecorder.remove(screenRecorder: screenRecorder)
                 contentView.onDelete(screenRecorder)
             }
         }
 
+        // create a new capture window
         newWindow = NSWindow(contentViewController: NSHostingController(rootView: contentView))
-
         newWindow!.titleVisibility = .hidden
         newWindow!.titlebarAppearsTransparent = true
         newWindow!.level = .floating
@@ -180,6 +180,7 @@ struct mupipApp: App {
         newWindow!.isMovableByWindowBackground = true
         newWindow!.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
+        // set default size and aspect ratio based on the recorded screen portion
         var windowFrame = newWindow!.frame
         windowFrame.size = NSSize(width: round(frame.width * (CGFloat(captureHeight) / frame.height)), height: CGFloat(captureHeight))
         newWindow!.setFrame(windowFrame, display: true)
@@ -188,6 +189,7 @@ struct mupipApp: App {
     }
 
     func goToCapture(screenRecorder: ScreenRecorder) {
+        // go to the window the is captured by the recorder
         var windowID: CGWindowID? = nil
 
         switch screenRecorder.capture {
@@ -205,18 +207,24 @@ struct mupipApp: App {
 
         if windowID != nil {
             if let availableWindows = CGWindowListCopyWindowInfo(.optionAll, kCGNullWindowID) as? [[String: Any]] {
+                // find the window matching the stored window ID
                 if let window = (availableWindows.first { $0[kCGWindowNumber as String] as! Int == windowID! }) {
+                    // determine process ID of window
                     let ownerPID = window[kCGWindowOwnerPID as String] as! Int
+
+                    // get window index
                     let windowIndex = availableWindows
                         .filter { $0[kCGWindowOwnerPID as String] as! Int == ownerPID }
                         .firstIndex { $0[kCGWindowNumber as String] as! Int == windowID! }
 
+                    // create accesssibility object for the window process ID
                     var axElements: AnyObject?
                     let appID = AXUIElementCreateApplication(pid_t(ownerPID))
                     AXUIElementCopyAttributeValue(appID, kAXWindowsAttribute as CFString, &axElements)
                     let axWindows = axElements as! [AXUIElement]
 
                     if windowIndex != nil && windowIndex! < axWindows.count {
+                        // bring window to front
                         let app = NSRunningApplication(processIdentifier: pid_t(ownerPID))
                         let axWindow = axWindows[windowIndex!]
                         app!.activate(options: [.activateIgnoringOtherApps])

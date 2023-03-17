@@ -1,10 +1,3 @@
-//
-//  ScreenRecorder.swift
-//  mupip
-//
-//  Created by Anna Scholtz on 2023-01-02.
-//
-
 import Accelerate
 import AVFAudio
 import Cocoa
@@ -14,11 +7,13 @@ import OSLog
 import ScreenCaptureKit
 import SwiftUI
 
+// State of a captured frame
 enum Frame {
     case captured(CapturedFrame)
     case idle
 }
 
+// Wrapper for captured frame
 struct CapturedFrame {
     let surface: IOSurface?
     let contentRect: CGRect
@@ -27,14 +22,21 @@ struct CapturedFrame {
     var size: CGSize { contentRect.size }
 }
 
+// Selected window portion to be captured
 struct Portion {
     let window: SCWindow
     let sourceRect: CGRect
 }
 
+// Screen capture type
 enum Capture {
+    // Capture a specific display
     case display(SCDisplay?)
+
+    // Capture a specific window
     case window(SCWindow?)
+
+    // Capture a portion of a window
     case portion(Portion?)
 }
 
@@ -42,21 +44,6 @@ enum Capture {
 class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     @AppStorage("refreshFrequency") private var refreshFrequency = DefaultSettings.refreshFrequency
     @AppStorage("inactivityThreshold") private var inactivityThreshold = DefaultSettings.inactivityThreshold
-
-    let id = UUID()
-    private var cropRect: CGRect? = nil
-
-    nonisolated static func == (lhs: ScreenRecorder, rhs: ScreenRecorder) -> Bool {
-        return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
-    }
-
-    nonisolated func hash(into hasher: inout Hasher) {
-        return hasher.combine(ObjectIdentifier(self))
-    }
-
-    private let logger = Logger()
-
-    var onStoppedRunning: ((ScreenRecorder) -> Void)? = nil
 
     @Published var isRunning = false {
         didSet {
@@ -72,25 +59,28 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     }
 
     @Published var contentSize = CGSize(width: 1, height: 1)
+    @Published var isPlayingAudio = false // window is the source for audio playing
+    @Published var isInactive = false // no activity in screen capture
 
-    @Published var isPlayingAudio = false
-    @Published var isInactive = false
+    lazy var captureView: CaptureView = .init()
+    var onStoppedRunning: ((ScreenRecorder) -> Void)? = nil
+    let id = UUID()
 
-    private var isSetup = false
+    private let logger = Logger()
+    private var cropRect: CGRect? = nil // selected window portion
+    private var isSetup = false // screen recorder set up is done
     private var subscriptions = Set<AnyCancellable>()
     private var stream: SCStream?
     private let videoBufferQueue = DispatchQueue(label: "net.scholtzan.mupip.VideoBufferQueue")
     private let audioBufferQueue = DispatchQueue(label: "net.scholtzan.mupip.AudioBufferQueue")
     private var continuation: AsyncThrowingStream<CapturedFrame, Error>.Continuation?
-    private var lastUpdated: Date = .init()
-
-    lazy var captureView: CaptureView = .init()
-
+    private var lastUpdated: Date = .init() // timestamp when capture content changed last
     private var streamConfiguration: SCStreamConfiguration {
         let streamConfig = SCStreamConfiguration()
         streamConfig.capturesAudio = true
         streamConfig.excludesCurrentProcessAudio = false
 
+        // stream configs based on captured content
         switch capture {
         case let .display(display):
             if display != nil {
@@ -113,11 +103,13 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             }
         }
 
+        // set capture refresh frequency
         streamConfig.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(refreshFrequency))
         return streamConfig
     }
 
     private var contentFilter: SCContentFilter {
+        // capture content filter settings
         let filter: SCContentFilter
         switch capture {
         case let .display(display):
@@ -134,18 +126,16 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
         return filter
     }
 
-    func record() async {
-        guard !isSetup else { return }
-        await refresh()
-        Timer.publish(every: 3, on: .main, in: .common).autoconnect().sink {
-            [weak self] _ in guard let self = self else { return }
-            Task {
-                await self.refresh()
-            }
-        }.store(in: &subscriptions)
+    nonisolated static func == (lhs: ScreenRecorder, rhs: ScreenRecorder) -> Bool {
+        return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+    }
+
+    nonisolated func hash(into hasher: inout Hasher) {
+        return hasher.combine(ObjectIdentifier(self))
     }
 
     func start() async {
+        // Start and set up the screen recorder
         if !isSetup {
             await record()
             isSetup = true
@@ -157,6 +147,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             isRunning = true
             isPaused = false
 
+            // handle recorded frames and audio
             let capturedFrames = AsyncThrowingStream<Frame, Error> { continuation in
                 let streamOutput = CapturedStreamOutput(continuation: continuation, cropRect: self.cropRect)
                 streamOutput.capturedFrameHandler = { continuation.yield($0) }
@@ -175,6 +166,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             for try await frame in capturedFrames {
                 switch frame {
                 case .idle:
+                    // determine whether capture has been inactive for long enough to show an indicator
                     let elapsed = Int(Date().timeIntervalSince(lastUpdated))
                     if elapsed > Int(inactivityThreshold) {
                         isInactive = true
@@ -195,7 +187,19 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
         }
     }
 
+    func record() async {
+        guard !isSetup else { return }
+        await refresh()
+        Timer.publish(every: 3, on: .main, in: .common).autoconnect().sink {
+            [weak self] _ in guard let self = self else { return }
+            Task {
+                await self.refresh()
+            }
+        }.store(in: &subscriptions)
+    }
+
     func stop(close: Bool) async {
+        // Stop screen recorder
         guard isRunning else { return }
 
         if !isPaused {
@@ -215,10 +219,12 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     }
 
     private func processAudio(audioBuffer: AVAudioPCMBuffer) {
+        // Process recorded audio to show an audio playing indicator
         let channelCount = Int(audioBuffer.format.channelCount)
         let length = vDSP_Length(audioBuffer.frameLength)
         var isSilent = true
 
+        // Check all buffers and channels for audio playing
         if let floatData = audioBuffer.floatChannelData {
             for channel in 0 ..< channelCount {
                 if isSilent {
@@ -255,6 +261,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     }
 
     private func checkSilent(data: UnsafePointer<Float>, strideFrames: Int, length: vDSP_Length) -> Bool {
+        // Check if audio is playing
         var max: Float = 0.0
         vDSP_maxv(data, strideFrames, &max, length)
 
@@ -265,16 +272,10 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
         return true
     }
 
-    private func filterWindows(_ windows: [SCWindow]) -> [SCWindow] {
-        windows.sorted { $0.owningApplication?.applicationName ?? "" < $1.owningApplication?.applicationName ?? "" }
-            .filter { $0.owningApplication != nil && $0.owningApplication?.applicationName != "" }
-            .filter { $0.owningApplication?.bundleIdentifier != Bundle.main.bundleIdentifier }
-    }
-
     private func refresh() async {
+        // Setup capture content
         do {
             let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
-
             let availableDisplays = content.displays
             let availableWindows = filterWindows(content.windows)
 
@@ -302,6 +303,7 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
     }
 
     private func update() {
+        // Update screen recorder
         guard isRunning else { return }
         Task {
             do {
@@ -312,8 +314,16 @@ class ScreenRecorder: ObservableObject, Hashable, Identifiable {
             }
         }
     }
+
+    private func filterWindows(_ windows: [SCWindow]) -> [SCWindow] {
+        // Get windows that available to be recorded
+        windows.sorted { $0.owningApplication?.applicationName ?? "" < $1.owningApplication?.applicationName ?? "" }
+            .filter { $0.owningApplication != nil && $0.owningApplication?.applicationName != "" }
+            .filter { $0.owningApplication?.bundleIdentifier != Bundle.main.bundleIdentifier }
+    }
 }
 
+// Stream output handler
 private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
     var capturedFrameHandler: ((Frame) -> Void)?
     var audioBufferHandler: ((AVAudioPCMBuffer) -> Void)?
@@ -342,9 +352,11 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
     }
 
     private func createFrame(for sampleBuffer: CMSampleBuffer, cropRect: CGRect?) -> Frame? {
+        // Create a capture frame
         guard let attachmentsArray = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
               let attachments = attachmentsArray.first else { return nil }
 
+        // determine captured frame status
         if let statusRawValue = attachments[SCStreamFrameInfo.status] as? Int {
             let status = SCFrameStatus(rawValue: statusRawValue)
             if status != .complete {
@@ -357,16 +369,16 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
             return nil
         }
 
+        // crop captured frame if window portion is recorded
         var pixelBuffer: CVPixelBuffer?
-
         if cropRect == nil {
             pixelBuffer = sampleBuffer.imageBuffer
         } else {
             pixelBuffer = sampleBuffer.imageBuffer!.crop(to: cropRect!)
         }
 
+        // get frame attributes
         guard let surfaceRef = CVPixelBufferGetIOSurface(pixelBuffer)?.takeUnretainedValue() else { return nil }
-
         let surface = unsafeBitCast(surfaceRef, to: IOSurface.self)
 
         guard let contentRectDict = attachments[.contentRect], var contentRect = CGRect(dictionaryRepresentation: contentRectDict as! CFDictionary),
@@ -377,12 +389,13 @@ private class CapturedStreamOutput: NSObject, SCStreamOutput, SCStreamDelegate {
             contentRect = cropRect!
         }
 
+        // create frame object
         let frame = Frame.captured(CapturedFrame(surface: surface, contentRect: contentRect, contentScale: contentScale, scaleFactor: scaleFactor))
-
         return frame
     }
 
     private func createAudioBuffer(for sampleBuffer: CMSampleBuffer) -> AVAudioPCMBuffer? {
+        // Capture audio
         var audioBufferListPointer: UnsafePointer<AudioBufferList>?
         try? sampleBuffer.withAudioBufferList { abl, _ in
             audioBufferListPointer = abl.unsafePointer

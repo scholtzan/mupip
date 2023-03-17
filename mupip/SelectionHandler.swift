@@ -1,20 +1,13 @@
-//
-//  SelectionHandler.swift
-//  mupip
-//
-//  Created by Anna Scholtz on 2023-01-15.
-//
-
 import Carbon.HIToolbox
 import OSLog
 import ScreenCaptureKit
 import SwiftUI
 
 @MainActor
+// Handler for selecteding content to be recorded
 class SelectionHandler {
     private var capture: Capture = .display(nil)
     private var selecting: Bool = false
-
     private var eventMonitor: Any?
     private var selection: NSWindow?
     private var selectOrigin: CGPoint?
@@ -22,7 +15,6 @@ class SelectionHandler {
     private var availableShareableContent: SCShareableContent?
     private var selectionOverlays: [NSWindow] = []
     private var currentSelectedWindow: (frame: NSRect, window: SCWindow)?
-
     private let logger = Logger()
 
     init() {
@@ -33,6 +25,7 @@ class SelectionHandler {
     }
 
     func start() async {
+        // Handle selection
         do {
             eventMonitor = NSEvent.addLocalMonitorForEvents(
                 matching: [NSEvent.EventTypeMask.keyDown, NSEvent.EventTypeMask.mouseMoved, NSEvent.EventTypeMask.leftMouseDown, NSEvent.EventTypeMask.rightMouseDown, NSEvent.EventTypeMask.leftMouseDragged, NSEvent.EventTypeMask.leftMouseUp],
@@ -41,12 +34,13 @@ class SelectionHandler {
                         return event
                     }
 
+                    // change cursor to crosshair while selecting
                     NSCursor.crosshair.push()
 
+                    // get current display based on mouse position
                     let mouseLocation = NSEvent.mouseLocation
                     let availableDisplays = self.availableShareableContent!.displays
                     let displayWithMouse = (availableDisplays.first { self.mouseOnDisplay(mouseLocation: mouseLocation, frame: $0.frame) })
-
                     var currentScreen: NSScreen?
                     for screen in NSScreen.screens {
                         if screen.deviceDescription[NSDeviceDescriptionKey(rawValue: "NSScreenNumber")] as? UInt32 == displayWithMouse?.displayID {
@@ -56,25 +50,21 @@ class SelectionHandler {
 
                     switch event.type {
                     case .keyDown:
+                        // stop selecting
                         if Int(event.keyCode) == kVK_Escape {
-                            NSCursor.pop()
-                            self.selection?.close()
-                            self.selecting = false
-                            for overlay in self.selectionOverlays {
-                                overlay.close()
-                            }
-                            self.selectionOverlays = []
-                            self.currentSelectedWindow = nil
+                            self.clearSelection()
                         }
                     case .mouseMoved:
                         switch capture {
                         case .window:
+                            // select and highlight window mouse is hovering
                             if currentScreen != nil {
                                 if let selectionFrame = self.windowWithMouse(mouseLocation: mouseLocation, currentScreen: currentScreen!)?.frame {
                                     selection!.setFrame(selectionFrame, display: true)
                                 }
                             }
                         case .display:
+                            // select and highlight screen with mouse cursor
                             if currentScreen != nil {
                                 selection!.setFrame(currentScreen!.frame, display: true)
                             }
@@ -82,45 +72,40 @@ class SelectionHandler {
                             break
                         }
                     case .leftMouseDragged:
+                        // dragging event only used when selecting window portion
                         switch capture {
                         case .window(_), .display:
                             break
                         case .portion:
                             if let origin = self.selectOrigin {
+                                // selecting already in progress, expand selection
                                 if let currentWindow = self.currentSelectedWindow {
                                     selection!.setFrame(self.selectionRect(origin: origin, mouseLocation: mouseLocation, windowFrame: currentWindow.frame), display: true)
                                 }
                             } else {
+                                // selecting window portion just started
                                 if currentScreen != nil {
                                     if let windowWithMouse = self.windowWithMouse(mouseLocation: mouseLocation, currentScreen: currentScreen!) {
                                         self.selectOrigin = mouseLocation
                                         self.currentSelectedWindow = windowWithMouse
                                     } else {
-                                        self.selectOrigin = nil
-                                        self.selection?.close()
-                                        self.selecting = false
-                                        self.currentSelectedWindow = nil
-
-                                        for overlay in self.selectionOverlays {
-                                            overlay.close()
-                                        }
-                                        self.selectionOverlays = []
-                                        NSCursor.pop()
+                                        // clear selection if selection started outside of window boundaries
+                                        self.clearSelection()
                                     }
                                 }
                             }
                         }
                     case .leftMouseUp:
+                        // draggin event stopped, window portion selected
                         switch capture {
                         case .display(_), .window:
                             break
                         case .portion:
                             if let origin = self.selectOrigin {
                                 if let window = self.currentSelectedWindow {
+                                    // determine portion of window to record
                                     let selectionRect = self.selectionRect(origin: origin, mouseLocation: mouseLocation, windowFrame: window.frame)
-
                                     let y = (window.frame.height - (selectionRect.minY - window.frame.minY)) - selectionRect.height
-
                                     let selectionFrame = NSRect(
                                         x: Int(selectionRect.minX - window.frame.minX),
                                         y: Int(y),
@@ -128,50 +113,36 @@ class SelectionHandler {
                                         height: Int(selectionRect.height)
                                     )
 
+                                    // create new screen recorder for window portion
                                     let newScreenRecorder = ScreenRecorder()
                                     newScreenRecorder.capture = .portion(Portion(window: window.window, sourceRect: selectionFrame))
                                     self.onSelect!(newScreenRecorder, selectionRect.size)
                                 }
                             }
 
-                            // TODO: clearSelection method
-                            self.selectOrigin = nil
-                            self.selection?.close()
-                            self.selecting = false
-                            self.currentSelectedWindow = nil
-
-                            for overlay in self.selectionOverlays {
-                                overlay.close()
-                            }
-                            self.selectionOverlays = []
-                            NSCursor.pop()
+                            self.clearSelection()
                         }
                     case .leftMouseDown, .rightMouseDown:
+                        // window or screen selected for recording
                         switch capture {
                         case .window:
                             if currentScreen != nil {
                                 if let selectedWindow = self.windowWithMouse(mouseLocation: mouseLocation, currentScreen: currentScreen!)?.window {
+                                    // create new screen recorder for selected window
                                     let newScreenRecorder = ScreenRecorder()
                                     newScreenRecorder.capture = .window(selectedWindow)
                                     self.onSelect!(newScreenRecorder, selectedWindow.frame.size)
                                 }
                             }
-                            for overlay in self.selectionOverlays {
-                                overlay.close()
-                            }
-                            self.selectionOverlays = []
-                            self.selection?.close()
-                            self.selecting = false
+                            self.clearSelection()
                         case .display:
                             if currentScreen != nil {
+                                // create new screen recorder for selected screen
                                 let newScreenRecorder = ScreenRecorder()
                                 newScreenRecorder.capture = .display(displayWithMouse)
                                 self.onSelect!(newScreenRecorder, currentScreen!.frame.size)
                             }
-
-                            self.selection?.close()
-                            self.selecting = false
-                            NSCursor.pop()
+                            self.clearSelection()
                         case .portion:
                             break
                         }
@@ -185,7 +156,22 @@ class SelectionHandler {
         }
     }
 
+    private func clearSelection() {
+        // Clear selection state, when selection has been aborted or finished
+        selectOrigin = nil
+        selection?.close()
+        selecting = false
+        currentSelectedWindow = nil
+
+        for overlay in selectionOverlays {
+            overlay.close()
+        }
+        selectionOverlays = []
+        NSCursor.pop()
+    }
+
     private func mouseOnDisplay(mouseLocation: CGPoint, frame: CGRect) -> Bool {
+        // Check if mouse cursor is in screen frame
         if mouseLocation.x < frame.minX || mouseLocation.x > frame.maxX {
             return false
         }
@@ -200,11 +186,13 @@ class SelectionHandler {
     }
 
     private func selectionRect(origin: CGPoint, mouseLocation: CGPoint, windowFrame: CGRect) -> CGRect {
+        // Determine position and dimension of the crop selection rectangle
         var x1: CGFloat = 0
         var x2: CGFloat = 0
         var y1: CGFloat = 0
         var y2: CGFloat = 0
 
+        // Ensure that selection rectangle stays within window boundaries
         if mouseLocation.x <= windowFrame.maxX && mouseLocation.x >= windowFrame.minX {
             if origin.x > mouseLocation.x {
                 x2 = origin.x
@@ -241,6 +229,7 @@ class SelectionHandler {
     }
 
     func select(capture: Capture, onSelect: @escaping ((ScreenRecorder, CGSize) -> Void)) {
+        // Setup selection
         self.capture = capture
         selecting = true
         self.onSelect = onSelect
@@ -268,6 +257,7 @@ class SelectionHandler {
     }
 
     private func showSelectionOverlays() {
+        // Create a transparent overlay window on every screen in order for window portions to be selected
         for screen in NSScreen.screens {
             let overlayWindow = NSWindow()
             overlayWindow.isReleasedWhenClosed = false
@@ -284,6 +274,7 @@ class SelectionHandler {
     }
 
     private func windowWithMouse(mouseLocation: NSPoint, currentScreen: NSScreen) -> (frame: NSRect, window: SCWindow)? {
+        // Determine window with current mouse cursor
         if let info = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID) as? [[String: Any]] {
             for dict in info {
                 // Quartz window information to NSWindow information
@@ -298,6 +289,7 @@ class SelectionHandler {
                         height: height
                     )
 
+                    // translate Quartz window information to positions that can be rendered on screen as selection
                     var displayCount: UInt32 = 0
                     CGGetActiveDisplayList(0, nil, &displayCount)
                     let allocatedDisplays = Int(displayCount)
@@ -338,6 +330,7 @@ class SelectionHandler {
     }
 
     private func filterWindows(_ windows: [SCWindow]) -> [SCWindow] {
+        // Filter on screen windows
         windows
             .sorted { $0.owningApplication?.applicationName ?? "" < $1.owningApplication?.applicationName ?? "" }
             .filter { $0.owningApplication != nil && $0.owningApplication?.applicationName != "" }

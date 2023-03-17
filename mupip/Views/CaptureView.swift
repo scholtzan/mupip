@@ -1,12 +1,6 @@
-//
-//  CaptureView.swift
-//  mupip
-//
-//  Created by Anna Scholtz on 2022-12-30.
-//
-
 import SwiftUI
 
+// Render the captured content
 struct CaptureView: NSViewRepresentable {
     private let contentLayer = CALayer()
 
@@ -36,11 +30,5 @@ struct CaptureView: NSViewRepresentable {
         required init?(coder _: NSCoder) {
             fatalError("Not implemented")
         }
-    }
-}
-
-struct CaptureView_Previews: PreviewProvider {
-    static var previews: some View {
-        CaptureView()
     }
 }

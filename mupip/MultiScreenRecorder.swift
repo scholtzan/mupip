@@ -3,31 +3,11 @@ import ScreenCaptureKit
 
 @MainActor
 class MultiScreenRecorder: ObservableObject {
+    // Handler for multiple screen recorder instances
     @Published var screenRecorders: [ScreenRecorder] = [ScreenRecorder()]
 
-    var hasRecordingPermissions: Bool {
-        get async {
-            var hasPermissions = false
-            do {
-                try await
-                    SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
-                hasPermissions = true
-            } catch {
-                hasPermissions = false
-            }
-            return hasPermissions
-        }
-    }
-
-    var hasWindowControlPermissions: Bool {
-        if AXIsProcessTrusted() {
-            return true
-        } else {
-            return false
-        }
-    }
-
     func start() async {
+        // Start all screen recorders
         for recorder in screenRecorders {
             Task {
                 await recorder.start()
@@ -36,22 +16,26 @@ class MultiScreenRecorder: ObservableObject {
     }
 
     func add(screenRecorder: ScreenRecorder) async {
+        // Add a new screen recorder
         screenRecorders.append(screenRecorder)
         await screenRecorder.start()
     }
 
     func remove(at: Int) async {
+        // Remove a specific screen recorder based on index
         await screenRecorders[at].stop(close: true)
         screenRecorders.remove(at: at)
     }
 
     func remove(screenRecorder: ScreenRecorder) async {
+        // Remove a specific screen recorder instance
         if let i = screenRecorders.firstIndex(of: screenRecorder) {
             await remove(at: i)
         }
     }
 
     func removeAll() async {
+        // Remove all screen recorders
         for recorder in screenRecorders {
             await remove(screenRecorder: recorder)
         }

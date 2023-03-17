@@ -12,6 +12,7 @@ import Foundation
 extension CVPixelBuffer {
     // based on https://github.com/hollance/CoreMLHelpers/blob/179ba6239886d2bc789430d6e466c54fddbbb654/CoreMLHelpers/CVPixelBuffer%2BResize.swift
     func crop(to rect: CGRect) -> CVPixelBuffer? {
+        // Crop pixel buffer to rectangle
         CVPixelBufferLockBaseAddress(self, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(self, .readOnly) }
 
@@ -52,6 +53,7 @@ extension CVPixelBuffer {
 
     // based on https://github.com/hollance/CoreMLHelpers/blob/179ba6239886d2bc789430d6e466c54fddbbb654/CoreMLHelpers/CVPixelBuffer+Create.swift
     func copyToMetalCompatible() -> CVPixelBuffer? {
+        // Make buffer metal compatible so that it can be rendered on surface
         let attributes: [String: Any] = [
             String(kCVPixelBufferOpenGLCompatibilityKey): true,
             String(kCVPixelBufferIOSurfacePropertiesKey): [:],
@@ -60,6 +62,7 @@ extension CVPixelBuffer {
     }
 
     func deepCopy(withAttributes attributes: [String: Any] = [:]) -> CVPixelBuffer? {
+        // Copy bugger
         let srcPixelBuffer = self
         let srcFlags: CVPixelBufferLockFlags = .readOnly
         guard kCVReturnSuccess == CVPixelBufferLockBaseAddress(srcPixelBuffer, srcFlags) else {

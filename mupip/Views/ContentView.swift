@@ -1,6 +1,7 @@
 import OSLog
 import SwiftUI
 
+// View rendering control elements and capture view
 struct ContentView: View {
     private let logger = Logger()
 
@@ -14,6 +15,7 @@ struct ContentView: View {
 
     var body: some View {
         ZStack(alignment: Alignment(horizontal: .trailing, vertical: .top), content: {
+            // capture view
             screenRecorder.captureView
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .aspectRatio(screenRecorder.contentSize, contentMode: .fit)
@@ -24,6 +26,7 @@ struct ContentView: View {
                 }
 
             if screenRecorder.isPaused {
+                // darken view if capture is paused
                 Rectangle()
                     .foregroundColor(Color.black.opacity(0.2))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -40,6 +43,7 @@ struct ContentView: View {
                     HStack {
                         switch self.screenRecorder.capture {
                         case .portion(_), .window:
+                            // Show button to go to captured window
                             Button(action: {
                                 self.onGoToCapture(self.screenRecorder)
                             }) {
@@ -57,6 +61,7 @@ struct ContentView: View {
                             Spacer()
                         }
                         Spacer()
+                        // Show button to delete capture
                         Button(action: {
                             self.onDelete(self.screenRecorder)
                         }) {
@@ -78,8 +83,10 @@ struct ContentView: View {
                         Spacer()
                         if self.isHovered {
                             if self.screenRecorder.isPaused {
+                                // Show button to resume recording if capture is paused
                                 Button(action: {
                                     Task {
+                                        // Stop recording
                                         await self.screenRecorder.stop(close: false)
                                     }
                                 }) {
@@ -93,6 +100,7 @@ struct ContentView: View {
                                 .controlSize(.large)
                                 .padding(.bottom, 10)
                             } else {
+                                // Show pause button if capture is in progress
                                 Button(action: {
                                     Task {
                                         await self.screenRecorder.start()
@@ -114,6 +122,7 @@ struct ContentView: View {
                     HStack {
                         Spacer()
                         if screenRecorder.isPlayingAudio {
+                            // Show animated icon if audio is coming from recorded capture
                             Label("", systemImage: "speaker.wave.\(audioIcon).fill")
                                 .font(.title)
                                 .labelStyle(.iconOnly)
@@ -125,6 +134,7 @@ struct ContentView: View {
                         }
 
                         if screenRecorder.isInactive {
+                            // Show inactivitiy indicator if captured content hasn't changed for a while
                             Label("", systemImage: "zzz")
                                 .font(.title)
                                 .labelStyle(.iconOnly)
@@ -144,6 +154,7 @@ struct ContentView: View {
             }
         }
         .onReceive(audioAnimationTimer) { _ in
+            // update animated audio indicator
             if audioIcon == 3 {
                 audioIcon = 1
             } else {
