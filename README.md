@@ -1,4 +1,4 @@
-# mupip - Multiple Picture-in-Picture for macOS
+# mupip - Multiple Picture-in-Picture on macOS
 
 mupip allows to watch any screen, application window or a portion of an application window on macOS in a floating window. The tool supports capturing multiple sources at the same time.
 
