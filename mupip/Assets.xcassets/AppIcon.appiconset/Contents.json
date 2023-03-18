@@ -21,11 +21,13 @@
       "size" : "32x32"
     },
     {
+      "filename" : "AppIcon@128px.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "128x128"
     },
     {
+      "filename" : "AppIcon@256px.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "128x128"
