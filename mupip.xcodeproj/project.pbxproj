@@ -11,9 +11,6 @@
 		95541E5D295FB36C00ECEC72 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E5C295FB36C00ECEC72 /* ContentView.swift */; };
 		95541E5F295FB37000ECEC72 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95541E5E295FB37000ECEC72 /* Assets.xcassets */; };
 		95541E62295FB37000ECEC72 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95541E61295FB37000ECEC72 /* Preview Assets.xcassets */; };
-		95541E6D295FB37000ECEC72 /* mupipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E6C295FB37000ECEC72 /* mupipTests.swift */; };
-		95541E77295FB37000ECEC72 /* mupipUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E76295FB37000ECEC72 /* mupipUITests.swift */; };
-		95541E79295FB37000ECEC72 /* mupipUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E78295FB37000ECEC72 /* mupipUITestsLaunchTests.swift */; };
 		95541E87295FBE6500ECEC72 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E86295FBE6500ECEC72 /* CaptureView.swift */; };
 		95541E8929634ADC00ECEC72 /* ScreenRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E8829634ADC00ECEC72 /* ScreenRecorder.swift */; };
 		95541E8B2963892E00ECEC72 /* MultiScreenRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95541E8A2963892E00ECEC72 /* MultiScreenRecorder.swift */; };
@@ -47,10 +44,7 @@
 		95541E61295FB37000ECEC72 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		95541E63295FB37000ECEC72 /* mupip.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = mupip.entitlements; sourceTree = "<group>"; };
 		95541E68295FB37000ECEC72 /* mupipTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mupipTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		95541E6C295FB37000ECEC72 /* mupipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mupipTests.swift; sourceTree = "<group>"; };
 		95541E72295FB37000ECEC72 /* mupipUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mupipUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		95541E76295FB37000ECEC72 /* mupipUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mupipUITests.swift; sourceTree = "<group>"; };
-		95541E78295FB37000ECEC72 /* mupipUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mupipUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		95541E86295FBE6500ECEC72 /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
 		95541E8829634ADC00ECEC72 /* ScreenRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRecorder.swift; sourceTree = "<group>"; };
 		95541E8A2963892E00ECEC72 /* MultiScreenRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultiScreenRecorder.swift; sourceTree = "<group>"; };
@@ -89,8 +83,6 @@
 			isa = PBXGroup;
 			children = (
 				95541E59295FB36C00ECEC72 /* mupip */,
-				95541E6B295FB37000ECEC72 /* mupipTests */,
-				95541E75295FB37000ECEC72 /* mupipUITests */,
 				95541E58295FB36C00ECEC72 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -128,23 +120,6 @@
 				95541E61295FB37000ECEC72 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		95541E6B295FB37000ECEC72 /* mupipTests */ = {
-			isa = PBXGroup;
-			children = (
-				95541E6C295FB37000ECEC72 /* mupipTests.swift */,
-			);
-			path = mupipTests;
-			sourceTree = "<group>";
-		};
-		95541E75295FB37000ECEC72 /* mupipUITests */ = {
-			isa = PBXGroup;
-			children = (
-				95541E76295FB37000ECEC72 /* mupipUITests.swift */,
-				95541E78295FB37000ECEC72 /* mupipUITestsLaunchTests.swift */,
-			);
-			path = mupipUITests;
 			sourceTree = "<group>";
 		};
 		95541E85295FBE3400ECEC72 /* Views */ = {
@@ -310,7 +285,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				95541E6D295FB37000ECEC72 /* mupipTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,8 +292,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				95541E79295FB37000ECEC72 /* mupipUITestsLaunchTests.swift in Sources */,
-				95541E77295FB37000ECEC72 /* mupipUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

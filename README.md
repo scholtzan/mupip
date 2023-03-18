@@ -2,7 +2,7 @@
 
 mupip allows to watch any screen, application window or a portion of an application window on macOS in a floating window. The tool supports capturing multiple sources at the same time.
 
-<img src="https://github.com/scholtzan/mupip/raw/main/docs/screenshot.png" width="1000">
+<img src="https://github.com/scholtzan/mupip/blob/main/doc/screenshot.png" width="1000">
 
 ## Features
 
