@@ -10,6 +10,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // open settings window if some permissions are missing
         if !AXIsProcessTrusted() {
             NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            NSApp.activate(ignoringOtherApps: true)
         }
 
         Task {
@@ -18,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
             } catch {
                 NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                NSApp.activate(ignoringOtherApps: true)
             }
         }
     }
@@ -67,6 +69,7 @@ struct mupipApp: App {
 
             Button("Settings...") {
                 NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                NSApp.activate(ignoringOtherApps: true)
             }.keyboardShortcut("s")
 
             Divider()
@@ -223,13 +226,20 @@ struct mupipApp: App {
                     AXUIElementCopyAttributeValue(appID, kAXWindowsAttribute as CFString, &axElements)
                     let axWindows = axElements as! [AXUIElement]
 
+                    let app = NSRunningApplication(processIdentifier: pid_t(ownerPID))
+                    var axWindow: AXUIElement? = nil
+
                     if windowIndex != nil && windowIndex! < axWindows.count {
                         // bring window to front
-                        let app = NSRunningApplication(processIdentifier: pid_t(ownerPID))
-                        let axWindow = axWindows[windowIndex!]
-                        app!.activate(options: [.activateIgnoringOtherApps])
-                        AXUIElementPerformAction(axWindow, kAXRaiseAction as CFString)
+                        axWindow = axWindows[windowIndex!]
+                    } else if axWindows.count > 0 {
+                        axWindow = axWindows[0]
+                    } else {
+                        return
                     }
+
+                    app!.activate(options: [.activateIgnoringOtherApps])
+                    AXUIElementPerformAction(axWindow!, kAXRaiseAction as CFString)
                 }
             }
         }

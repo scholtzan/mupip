@@ -35,7 +35,7 @@ struct SettingsView: View {
                 VStack {
                     HStack {
                         // Button to open screen recording permissions
-                        Text("Grant Screen Recording Permissions")
+                        Text("Grant Screen Recording Permissions: ")
                         Button("Open Screen Recording Preferences...") {
                             NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
                         }
@@ -44,7 +44,7 @@ struct SettingsView: View {
 
                     HStack {
                         // Button to oppen privacy accessibilities
-                        Text("Grant Window Control Permissions")
+                        Text("Grant Window Control Permissions: ")
                         Button("Open Privacy Accessibility Preferences...") {
                             NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
                         }

@@ -86,8 +86,8 @@ struct ContentView: View {
                                 // Show button to resume recording if capture is paused
                                 Button(action: {
                                     Task {
-                                        // Stop recording
-                                        await self.screenRecorder.stop(close: false)
+                                        // Continue recording
+                                        await self.screenRecorder.start()
                                     }
                                 }) {
                                     Image(systemName: "play.square.fill")
@@ -97,54 +97,45 @@ struct ContentView: View {
                                         .foregroundColor(.gray)
                                 }
                                 .buttonStyle(.plain)
-                                .controlSize(.large)
-                                .padding(.bottom, 10)
+                                .controlSize(.regular)
                             } else {
                                 // Show pause button if capture is in progress
                                 Button(action: {
                                     Task {
-                                        await self.screenRecorder.start()
+                                        await self.screenRecorder.stop(close: false)
                                     }
                                 }) {
                                     Image(systemName: "pause.rectangle.fill")
                                         .resizable()
-                                        .scaledToFit()
                                         .frame(width: 24, height: 24)
                                         .foregroundColor(.gray)
                                 }
                                 .buttonStyle(.plain)
                                 .controlSize(.regular)
-                                .padding(.bottom, 10)
                             }
                         }
                         Spacer()
-                    }
-                    HStack {
-                        Spacer()
+
                         if screenRecorder.isPlayingAudio {
                             // Show animated icon if audio is coming from recorded capture
                             Label("", systemImage: "speaker.wave.\(audioIcon).fill")
-                                .font(.title)
                                 .labelStyle(.iconOnly)
-                                .frame(width: 10, height: 10)
+                                .frame(width: 16, height: 16)
                                 .foregroundColor(.gray)
-                                .controlSize(.mini)
-                                .padding(.bottom, 10)
                                 .padding(.trailing, 10)
                         }
 
                         if screenRecorder.isInactive {
                             // Show inactivitiy indicator if captured content hasn't changed for a while
                             Label("", systemImage: "zzz")
-                                .font(.title)
                                 .labelStyle(.iconOnly)
-                                .frame(width: 10, height: 10)
+                                .frame(width: 16, height: 16)
                                 .foregroundColor(.gray)
-                                .controlSize(.mini)
-                                .padding(.bottom, 10)
                                 .padding(.trailing, 10)
                         }
                     }
+                    .padding(.bottom, 15)
+                    .frame(height: 24)
                 })
             }
         })

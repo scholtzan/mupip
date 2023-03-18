@@ -7,7 +7,27 @@ import SwiftUI
 // Handler for selecteding content to be recorded
 class SelectionHandler {
     private var capture: Capture = .display(nil)
-    private var selecting: Bool = false
+    private var selecting: Bool = false {
+        didSet {
+            if selecting {
+                // change cursor to crosshair while selecting
+                DispatchQueue.main.async {
+                    NSCursor.crosshair.push()
+                }
+            } else {
+                NSCursor.pop()
+                selectOrigin = nil
+                selection?.close()
+                currentSelectedWindow = nil
+
+                for overlay in selectionOverlays {
+                    overlay.close()
+                }
+                selectionOverlays = []
+            }
+        }
+    }
+
     private var eventMonitor: Any?
     private var selection: NSWindow?
     private var selectOrigin: CGPoint?
@@ -34,9 +54,6 @@ class SelectionHandler {
                         return event
                     }
 
-                    // change cursor to crosshair while selecting
-                    NSCursor.crosshair.push()
-
                     // get current display based on mouse position
                     let mouseLocation = NSEvent.mouseLocation
                     let availableDisplays = self.availableShareableContent!.displays
@@ -52,7 +69,7 @@ class SelectionHandler {
                     case .keyDown:
                         // stop selecting
                         if Int(event.keyCode) == kVK_Escape {
-                            self.clearSelection()
+                            self.selecting = false
                         }
                     case .mouseMoved:
                         switch capture {
@@ -90,7 +107,7 @@ class SelectionHandler {
                                         self.currentSelectedWindow = windowWithMouse
                                     } else {
                                         // clear selection if selection started outside of window boundaries
-                                        self.clearSelection()
+                                        self.selecting = false
                                     }
                                 }
                             }
@@ -120,7 +137,7 @@ class SelectionHandler {
                                 }
                             }
 
-                            self.clearSelection()
+                            self.selecting = false
                         }
                     case .leftMouseDown, .rightMouseDown:
                         // window or screen selected for recording
@@ -134,7 +151,7 @@ class SelectionHandler {
                                     self.onSelect!(newScreenRecorder, selectedWindow.frame.size)
                                 }
                             }
-                            self.clearSelection()
+                            self.selecting = false
                         case .display:
                             if currentScreen != nil {
                                 // create new screen recorder for selected screen
@@ -142,7 +159,7 @@ class SelectionHandler {
                                 newScreenRecorder.capture = .display(displayWithMouse)
                                 self.onSelect!(newScreenRecorder, currentScreen!.frame.size)
                             }
-                            self.clearSelection()
+                            self.selecting = false
                         case .portion:
                             break
                         }
@@ -154,20 +171,6 @@ class SelectionHandler {
                 }
             )
         }
-    }
-
-    private func clearSelection() {
-        // Clear selection state, when selection has been aborted or finished
-        selectOrigin = nil
-        selection?.close()
-        selecting = false
-        currentSelectedWindow = nil
-
-        for overlay in selectionOverlays {
-            overlay.close()
-        }
-        selectionOverlays = []
-        NSCursor.pop()
     }
 
     private func mouseOnDisplay(mouseLocation: CGPoint, frame: CGRect) -> Bool {
