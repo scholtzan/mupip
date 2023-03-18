@@ -40,7 +40,7 @@ struct mupipApp: App {
     private let logger = Logger()
 
     var body: some Scene {
-        MenuBarExtra("mupip", systemImage: "camera.on.rectangle.fill") {
+        MenuBarExtra("mupip", image: "tray-icon") {
             Menu("Capture") {
                 Button("Display") {
                     selectionHandler.select(capture: .display(nil), onSelect: { [self] (screenRecorder: ScreenRecorder, frame: CGSize) in
